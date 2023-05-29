@@ -19,7 +19,7 @@
   action()
 }
 </pre>
-</li></ul><h2 id="notification-vs-combine"><a name="notification-vs-combine" href="#notification-vs-combine"></a>Notification vs Combine</h2><h3 id="[通知---notification](https://www.appcoda.com.tw/notificationcenter/)"><a name="[通知---notification](https://www.appcoda.com.tw/notificationcenter/)" href="#[通知---notification](https://www.appcoda.com.tw/notificationcenter/)"></a><a href="https://www.appcoda.com.tw/notificationcenter/">通知 - Notification</a></h3><ul>
+</li></ul><h2 id="lesson.01---notification-vs-combine"><a name="lesson.01---notification-vs-combine" href="#lesson.01---notification-vs-combine"></a>Lesson.01 - Notification vs Combine</h2><h3 id="[通知---notification](https://www.appcoda.com.tw/notificationcenter/)"><a name="[通知---notification](https://www.appcoda.com.tw/notificationcenter/)" href="#[通知---notification](https://www.appcoda.com.tw/notificationcenter/)"></a><a href="https://www.appcoda.com.tw/notificationcenter/">通知 - Notification</a></h3><ul>
 <li>先以一個iOS基本的Notification為基準</li><li><pre data-origin="example(of: &quot;Notification&quot;) {
 
   let myNotification = Notification.Name(&quot;MyNotification&quot;)
@@ -670,8 +670,8 @@ Received value <span class="hljs-number">4</span>
 Received value <span class="hljs-number">5</span>
 Received value <span class="hljs-number">6</span>
 </pre>
-</li></ul><h2 id="[erasetoanypublisher()](https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;))"><a name="[erasetoanypublisher()](https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;))" href="#[erasetoanypublisher()](https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;))"></a><a href="https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;&amp;#41">eraseToAnyPublisher()</a></h2><h3 id="轉成anypublisher"><a name="轉成anypublisher" href="#轉成anypublisher"></a>轉成AnyPublisher</h3><ul>
-<li>讓Publisher的類型<a href="https://ithelp.ithome.com.tw/articles/10221967">簡單化</a></li><li><pre data-origin="example(of: &quot;Type erasure&quot;) {
+</li></ul><h3 id="[erasetoanypublisher()](https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;))"><a name="[erasetoanypublisher()](https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;))" href="#[erasetoanypublisher()](https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;))"></a><a href="https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;&amp;#41">eraseToAnyPublisher()</a></h3><ul>
+<li>轉成AnyPublisher</li><li>讓Publisher的類型<a href="https://ithelp.ithome.com.tw/articles/10221967">簡單化</a></li><li><pre data-origin="example(of: &quot;Type erasure&quot;) {
 
   let subject = PassthroughSubject&amp;lt;Int, Never&amp;gt;()  // PassthroughSubject&amp;lt;Int, Never&amp;gt;
   let publisher = subject.eraseToAnyPublisher()   // PassthroughSubject&amp;lt;Int, Never&amp;gt; =&amp;gt; AnyPublisher&amp;lt;Int, Never&amp;gt;
@@ -752,7 +752,7 @@ Element: <span class="hljs-number">2</span>
 Element: <span class="hljs-number">3</span>
 Completed.
 </pre>
-</li></ul><h2 id="operators也是publisher"><a name="operators也是publisher" href="#operators也是publisher"></a>Operators也是Publisher</h2><h3 id="[collect()](https://juejin.cn/post/7017265258263740424)"><a name="[collect()](https://juejin.cn/post/7017265258263740424)" href="#[collect()](https://juejin.cn/post/7017265258263740424)"></a><a href="https://juejin.cn/post/7017265258263740424">collect()</a></h3><ul>
+</li></ul><h2 id="lesson.02---operators也是publisher"><a name="lesson.02---operators也是publisher" href="#lesson.02---operators也是publisher"></a>Lesson.02 - Operators也是Publisher</h2><h3 id="[collect()](https://juejin.cn/post/7017265258263740424)"><a name="[collect()](https://juejin.cn/post/7017265258263740424)" href="#[collect()](https://juejin.cn/post/7017265258263740424)"></a><a href="https://juejin.cn/post/7017265258263740424">collect()</a></h3><ul>
 <li><p>將單一值做分組…</p>
 <pre data-origin="example(of: &quot;collect&quot;) {
 
@@ -1044,6 +1044,451 @@ finished
 }
 </pre>
 <p><img src="image/Scan.png" alt=""></p>
+</li></ul><h2 id="lesson.03---過濾用的operator"><a name="lesson.03---過濾用的operator" href="#lesson.03---過濾用的operator"></a>Lesson.03 - 過濾用的Operator</h2><h3 id="[filter()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v2.0/chapters/4-filtering-operators)"><a name="[filter()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v2.0/chapters/4-filtering-operators)" href="#[filter()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v2.0/chapters/4-filtering-operators)"></a><a href="https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v2.0/chapters/4-filtering-operators">filter()</a></h3><ul>
+<li>過濾之用，跟<a href="https://www.inote.tw/swift-array-filter">filter()</a>很像</li><li><pre data-origin="example(of: &quot;filter&quot;) {
+
+  let multiple = 3
+  let numbers = (1...10).publisher
+
+  numbers
+      .filter { $0.isMultiple(of: multiple) }
+      .sink(receiveValue: { number in print(&quot;\(number) 是 \(multiple) 的倍數 !!!&quot;)})
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"filter"</span>) {
+
+  <span class="hljs-keyword">let</span> multiple = <span class="hljs-number">3</span>
+  <span class="hljs-keyword">let</span> numbers = (<span class="hljs-number">1</span>...<span class="hljs-number">10</span>).publisher
+
+  numbers
+      .<span class="hljs-built_in">filter</span> { $<span class="hljs-number">0</span>.isMultiple(of: multiple) }
+      .sink(receiveValue: { number <span class="hljs-keyword">in</span> <span class="hljs-built_in">print</span>(<span class="hljs-string">"<span class="hljs-subst">\(number)</span> 是 <span class="hljs-subst">\(multiple)</span> 的倍數 !!!"</span>)})
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: filter ===
+3 是 3 的倍數 !!!
+6 是 3 的倍數 !!!
+9 是 3 的倍數 !!!
+" class="bash hljs">=== 範例: filter ===
+<span class="hljs-number">3</span> 是 <span class="hljs-number">3</span> 的倍數 !!!
+<span class="hljs-number">6</span> 是 <span class="hljs-number">3</span> 的倍數 !!!
+<span class="hljs-number">9</span> 是 <span class="hljs-number">3</span> 的倍數 !!!
+</pre>
+</li></ul><h3 id="[removeduplicates()](https://paigeshin1991.medium.com/swift-combine-removeduplicates-you-can-totally-misuse-it-if-you-dont-read-this-9bf9c3c36296)"><a name="[removeduplicates()](https://paigeshin1991.medium.com/swift-combine-removeduplicates-you-can-totally-misuse-it-if-you-dont-read-this-9bf9c3c36296)" href="#[removeduplicates()](https://paigeshin1991.medium.com/swift-combine-removeduplicates-you-can-totally-misuse-it-if-you-dont-read-this-9bf9c3c36296)"></a><a href="https://paigeshin1991.medium.com/swift-combine-removeduplicates-you-can-totally-misuse-it-if-you-dont-read-this-9bf9c3c36296">removeDuplicates()</a></h3><ul>
+<li><p>取得非重複資料，跟SQL的<a href="https://www.fooish.com/sql/distinct.html">SELECT DISTINCT</a>功能很像</p>
+<pre data-origin="example(of: &quot;removeDuplicates&quot;) {
+
+let words = &quot;hey hey there! want to listen to mister mister ?&quot;
+                .components(separatedBy: &quot; &quot;)
+                .publisher
+words
+  .removeDuplicates()
+  .sink(receiveValue: { print($0) })
+  .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"removeDuplicates"</span>) {
+
+<span class="hljs-keyword">let</span> words = <span class="hljs-string">"hey hey there! want to listen to mister mister ?"</span>
+                .components(separatedBy: <span class="hljs-string">" "</span>)
+                .publisher
+words
+  .removeDuplicates()
+  .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+  .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="hey
+there!
+want
+to
+listen
+to
+mister
+?
+" class="bash hljs">hey
+there!
+want
+to
+listen
+to
+mister
+?
+</pre>
+</li></ul><h3 id="[compactmap()](https://juejin.cn/post/7017623451858894862)"><a name="[compactmap()](https://juejin.cn/post/7017623451858894862)" href="#[compactmap()](https://juejin.cn/post/7017623451858894862)"></a><a href="https://juejin.cn/post/7017623451858894862">compactMap()</a></h3><ul>
+<li><p>把Optional值去除，跟<a href="https://medium.com/jeremy-xue-s-blog/swift-transforming-an-array-e2bcb4f4d67d">compactMap()</a>很像</p>
+<pre data-origin="example(of: &quot;compactMap&quot;) {
+
+  let strings = [&quot;a&quot;, &quot;1.24&quot;, &quot;3&quot;, &quot;def&quot;, &quot;45&quot;, &quot;0.23&quot;].publisher
+
+  strings
+      .compactMap { Float($0) }               /// 過濾Float
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"compactMap"</span>) {
+
+  <span class="hljs-keyword">let</span> strings = [<span class="hljs-string">"a"</span>, <span class="hljs-string">"1.24"</span>, <span class="hljs-string">"3"</span>, <span class="hljs-string">"def"</span>, <span class="hljs-string">"45"</span>, <span class="hljs-string">"0.23"</span>].publisher
+
+  strings
+      .compactMap { <span class="hljs-type">Float</span>($<span class="hljs-number">0</span>) }               <span class="hljs-comment">/// 過濾Float</span>
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: compactMap ===
+1.24
+3.0
+45.0
+0.23
+" class="bash hljs">=== 範例: compactMap ===
+<span class="hljs-number">1.24</span>
+<span class="hljs-number">3.0</span>
+<span class="hljs-number">45.0</span>
+<span class="hljs-number">0.23</span>
+</pre>
+</li></ul><h3 id="[ignoreoutput()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators)"><a name="[ignoreoutput()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators)" href="#[ignoreoutput()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators)"></a><a href="https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators">ignoreOutput()</a></h3><ul>
+<li><p>取得的值不重要，只關心<a href="https://zhuanlan.zhihu.com/p/341961251">完成</a>了沒有</p>
+<pre data-origin="example(of: &quot;ignoreOutput&quot;) {
+
+  let numbers = (1...10_000).publisher
+
+  numbers
+      .ignoreOutput()
+      .sink(
+          receiveCompletion: { print(&quot;完成: \($0)&quot;) },
+          receiveValue: { print($0) }
+      )
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"ignoreOutput"</span>) {
+
+  <span class="hljs-keyword">let</span> numbers = (<span class="hljs-number">1</span>...<span class="hljs-number">10_000</span>).publisher
+
+  numbers
+      .ignoreOutput()
+      .sink(
+          receiveCompletion: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"完成: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: ignoreOutput ===
+完成: finished
+" class="bash hljs">=== 範例: ignoreOutput ===
+完成: finished
+</pre>
+</li></ul><h3 id="[first(where:)](https://juejin.cn/post/7017623451858894862)"><a name="[first(where:)](https://juejin.cn/post/7017623451858894862)" href="#[first(where:)](https://juejin.cn/post/7017623451858894862)"></a><a href="https://juejin.cn/post/7017623451858894862">first(where:)</a></h3><ul>
+<li><p>取得第一個符合過濾的值</p>
+<pre data-origin="example(of: &quot;first(where:)&quot;) {
+
+  let multiple = 2
+  let numbers = (1...9).publisher
+
+  numbers
+      .print(&quot;numbers&quot;)
+      .first(where: { $0 % multiple == 0 })
+      .sink(
+          receiveCompletion: { print(&quot;完成: \($0)&quot;) },
+          receiveValue: { print(&quot;第一個偶數: \($0)&quot;) }
+      )
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"first(where:)"</span>) {
+
+  <span class="hljs-keyword">let</span> multiple = <span class="hljs-number">2</span>
+  <span class="hljs-keyword">let</span> numbers = (<span class="hljs-number">1</span>...<span class="hljs-number">9</span>).publisher
+
+  numbers
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"numbers"</span>)
+      .first(<span class="hljs-keyword">where</span>: { $<span class="hljs-number">0</span> % multiple == <span class="hljs-number">0</span> })
+      .sink(
+          receiveCompletion: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"完成: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"第一個偶數: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: first(where:) ===
+numbers: receive subscription: (1...9)
+numbers: request unlimited
+numbers: receive value: (1)
+numbers: receive value: (2)
+numbers: receive cancel
+第一個偶數: 2
+完成: finished
+" class="bash hljs">=== 範例: first(<span class="hljs-built_in">where</span>:) ===
+numbers: receive subscription: (<span class="hljs-number">1</span>...<span class="hljs-number">9</span>)
+numbers: request unlimited
+numbers: receive value: (<span class="hljs-number">1</span>)
+numbers: receive value: (<span class="hljs-number">2</span>)
+numbers: receive cancel
+第一個偶數: <span class="hljs-number">2</span>
+完成: finished
+</pre>
+</li></ul><h3 id="[last(where:)](https://juejin.cn/post/7017623451858894862)"><a name="[last(where:)](https://juejin.cn/post/7017623451858894862)" href="#[last(where:)](https://juejin.cn/post/7017623451858894862)"></a><a href="https://juejin.cn/post/7017623451858894862">last(where:)</a></h3><ul>
+<li>取得最後一個符合過濾的值</li><li><p>取得第一個很簡單，只要有符合就行了；但是最後一個的話，就要finished才可以</p>
+<pre data-origin="example(of: &quot;last(where:)&quot;) {
+
+  let numbers = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+
+  numbers
+      .last(where: { $0 % 2 == 0 })
+      .sink(
+          receiveCompletion: { print(&quot;完成: \($0)&quot;) },
+          receiveValue: { print(&quot;最後一個偶數: \($0)&quot;) }
+      )
+      .store(in: &amp;amp;subscriptions)
+
+  numbers.send(1)
+  numbers.send(2)
+  numbers.send(3)
+  numbers.send(4)
+  numbers.send(5)
+  numbers.send(completion: .finished)        /// 要執行這個後才有值
+}
+" class="swift hljs">example(of: <span class="hljs-string">"last(where:)"</span>) {
+
+  <span class="hljs-keyword">let</span> numbers = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+
+  numbers
+      .last(<span class="hljs-keyword">where</span>: { $<span class="hljs-number">0</span> % <span class="hljs-number">2</span> == <span class="hljs-number">0</span> })
+      .sink(
+          receiveCompletion: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"完成: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"最後一個偶數: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  numbers.send(<span class="hljs-number">1</span>)
+  numbers.send(<span class="hljs-number">2</span>)
+  numbers.send(<span class="hljs-number">3</span>)
+  numbers.send(<span class="hljs-number">4</span>)
+  numbers.send(<span class="hljs-number">5</span>)
+  numbers.send(completion: .finished)        <span class="hljs-comment">/// 要執行這個後才有值</span>
+}
+</pre>
+<pre data-origin="=== 範例: last(where:) ===
+最後一個偶數: 4
+完成: finished
+" class="bash hljs">=== 範例: last(<span class="hljs-built_in">where</span>:) ===
+最後一個偶數: <span class="hljs-number">4</span>
+完成: finished
+</pre>
+</li></ul><h3 id="[dropfirst()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators)"><a name="[dropfirst()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators)" href="#[dropfirst()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators)"></a><a href="https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators">dropFirst()</a></h3><ul>
+<li><p>忽略掉前面的值</p>
+<pre data-origin="example(of: &quot;dropFirst&quot;) {
+
+  let numbers = (1...10).publisher
+
+  numbers
+      .dropFirst(8)       /// 忽略掉前8組
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"dropFirst"</span>) {
+
+  <span class="hljs-keyword">let</span> numbers = (<span class="hljs-number">1</span>...<span class="hljs-number">10</span>).publisher
+
+  numbers
+      .<span class="hljs-built_in">dropFirst</span>(<span class="hljs-number">8</span>)       <span class="hljs-comment">/// 忽略掉前8組</span>
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: dropFirst ===
+9
+10
+" class="bash hljs">=== 範例: dropFirst ===
+<span class="hljs-number">9</span>
+<span class="hljs-number">10</span>
+</pre>
+</li></ul><h3 id="[drop(while:)](https://juejin.cn/post/7017853525271150599)"><a name="[drop(while:)](https://juejin.cn/post/7017853525271150599)" href="#[drop(while:)](https://juejin.cn/post/7017853525271150599)"></a><a href="https://juejin.cn/post/7017853525271150599">drop(while:)</a></h3><ul>
+<li><p>有條件的忽略掉數值</p>
+<pre data-origin="example(of: &quot;drop(while:)&quot;) {
+
+  let numbers = (1...10).publisher
+
+  numbers
+      .drop(while: { print(&quot;x&quot;); return $0 % 5 != 0})
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"drop(while:)"</span>) {
+
+  <span class="hljs-keyword">let</span> numbers = (<span class="hljs-number">1</span>...<span class="hljs-number">10</span>).publisher
+
+  numbers
+      .drop(<span class="hljs-keyword">while</span>: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"x"</span>); <span class="hljs-keyword">return</span> $<span class="hljs-number">0</span> % <span class="hljs-number">5</span> != <span class="hljs-number">0</span>})
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: dropFirst ===
+9
+10
+" class="bash hljs">=== 範例: dropFirst ===
+<span class="hljs-number">9</span>
+<span class="hljs-number">10</span>
+</pre>
+</li></ul><h3 id="[drop(while:)](https://juejin.cn/post/7017853525271150599)"><a name="[drop(while:)](https://juejin.cn/post/7017853525271150599)" href="#[drop(while:)](https://juejin.cn/post/7017853525271150599)"></a><a href="https://juejin.cn/post/7017853525271150599">drop(while:)</a></h3><ul>
+<li><p>有條件的忽略掉數值</p>
+<pre data-origin="example(of: &quot;drop(untilOutputFrom:)&quot;) {
+
+  let isReady = PassthroughSubject&amp;lt;Void, Never&amp;gt;()
+  let taps = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+
+  taps.drop(untilOutputFrom: isReady)         /// 直到isReady變數發出值之後才動作
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+
+  (1...5).forEach { n in
+      taps.send(n)                            /// 在isReady發出值之前都是沒有用的
+      if n == 3 { isReady.send() }            /// isReady發出值
+  }
+}
+" class="swift hljs">example(of: <span class="hljs-string">"drop(untilOutputFrom:)"</span>) {
+
+  <span class="hljs-keyword">let</span> isReady = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Void</span>, <span class="hljs-type">Never</span>&gt;()
+  <span class="hljs-keyword">let</span> taps = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+
+  taps.drop(untilOutputFrom: isReady)         <span class="hljs-comment">/// 直到isReady變數發出值之後才動作</span>
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  (<span class="hljs-number">1</span>...<span class="hljs-number">5</span>).forEach { n <span class="hljs-keyword">in</span>
+      taps.send(n)                            <span class="hljs-comment">/// 在isReady發出值之前都是沒有用的</span>
+      <span class="hljs-keyword">if</span> n == <span class="hljs-number">3</span> { isReady.send() }            <span class="hljs-comment">/// isReady發出值</span>
+  }
+}
+</pre>
+<pre data-origin="=== 範例: drop(untilOutputFrom:) ===
+4
+5
+" class="bash hljs">=== 範例: drop(untilOutputFrom:) ===
+<span class="hljs-number">4</span>
+<span class="hljs-number">5</span>
+</pre>
+</li></ul><h3 id="[prefix(while:)](https://juejin.cn/post/7017853525271150599)"><a name="[prefix(while:)](https://juejin.cn/post/7017853525271150599)" href="#[prefix(while:)](https://juejin.cn/post/7017853525271150599)"></a><a href="https://juejin.cn/post/7017853525271150599">prefix(while:)</a></h3><ul>
+<li><p>跟drop(while:)相反的功能，只取前面幾組，後面的不重要</p>
+<pre data-origin="example(of: &quot;prefix(while:)&quot;) {
+
+  let numbers = (1...10).publisher
+
+  numbers
+      .prefix(while: { $0 &amp;lt; 3 })
+      .sink(
+          receiveCompletion: { print(&quot;完成: \($0)&quot;) },
+          receiveValue: { print($0) }
+      )
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"prefix(while:)"</span>) {
+
+  <span class="hljs-keyword">let</span> numbers = (<span class="hljs-number">1</span>...<span class="hljs-number">10</span>).publisher
+
+  numbers
+      .<span class="hljs-keyword">prefix</span>(<span class="hljs-keyword">while</span>: { $<span class="hljs-number">0</span> &lt; <span class="hljs-number">3</span> })
+      .sink(
+          receiveCompletion: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"完成: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: prefix(while:) ===
+1
+2
+完成: finished
+" class="bash hljs">=== 範例: prefix(<span class="hljs-keyword">while</span>:) ===
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+完成: finished
+</pre>
+</li></ul><h3 id="[prefix(while:)](https://juejin.cn/post/7017853525271150599)"><a name="[prefix(while:)](https://juejin.cn/post/7017853525271150599)" href="#[prefix(while:)](https://juejin.cn/post/7017853525271150599)"></a><a href="https://juejin.cn/post/7017853525271150599">prefix(while:)</a></h3><ul>
+<li><p>跟drop(while:)相反的功能，只取前面幾組，後面的不重要</p>
+<pre data-origin="example(of: &quot;prefix(while:)&quot;) {
+
+  let numbers = (1...10).publisher
+
+  numbers
+      .prefix(while: { $0 &amp;lt; 3 })
+      .sink(
+          receiveCompletion: { print(&quot;完成: \($0)&quot;) },
+          receiveValue: { print($0) }
+      )
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"prefix(while:)"</span>) {
+
+  <span class="hljs-keyword">let</span> numbers = (<span class="hljs-number">1</span>...<span class="hljs-number">10</span>).publisher
+
+  numbers
+      .<span class="hljs-keyword">prefix</span>(<span class="hljs-keyword">while</span>: { $<span class="hljs-number">0</span> &lt; <span class="hljs-number">3</span> })
+      .sink(
+          receiveCompletion: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"完成: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: prefix(while:) ===
+1
+2
+完成: finished
+" class="bash hljs">=== 範例: prefix(<span class="hljs-keyword">while</span>:) ===
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+完成: finished
+</pre>
+</li></ul><h3 id="[prefix(untiloutputfrom:)](https://juejin.cn/post/7017853525271150599)"><a name="[prefix(untiloutputfrom:)](https://juejin.cn/post/7017853525271150599)" href="#[prefix(untiloutputfrom:)](https://juejin.cn/post/7017853525271150599)"></a><a href="https://juejin.cn/post/7017853525271150599">prefix(untilOutputFrom:)</a></h3><ul>
+<li><p>跟drop(untilOutputFrom:)相反的功能，只取前面幾組，後面的不重要</p>
+<pre data-origin="example(of: &quot;prefix(untilOutputFrom:)&quot;) {
+
+  let isReady = PassthroughSubject&amp;lt;Void, Never&amp;gt;()
+  let taps = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+
+  taps
+      .prefix(untilOutputFrom: isReady)                   /// 直到isReady變數發出值之後不停止
+      .sink(
+          receiveCompletion: { print(&quot;完成: \($0)&quot;) },
+          receiveValue: { print($0) }
+      )
+      .store(in: &amp;amp;subscriptions)
+
+  (1...5).forEach { n in
+      taps.send(n)                                        /// 在isReady發出值之前一直是有效的
+      if n == 2 { isReady.send() }                        /// isReady發出值
+  }
+}
+" class="swift hljs">example(of: <span class="hljs-string">"prefix(untilOutputFrom:)"</span>) {
+
+  <span class="hljs-keyword">let</span> isReady = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Void</span>, <span class="hljs-type">Never</span>&gt;()
+  <span class="hljs-keyword">let</span> taps = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+
+  taps
+      .<span class="hljs-keyword">prefix</span>(untilOutputFrom: isReady)                   <span class="hljs-comment">/// 直到isReady變數發出值之後不停止</span>
+      .sink(
+          receiveCompletion: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"完成: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  (<span class="hljs-number">1</span>...<span class="hljs-number">5</span>).forEach { n <span class="hljs-keyword">in</span>
+      taps.send(n)                                        <span class="hljs-comment">/// 在isReady發出值之前一直是有效的</span>
+      <span class="hljs-keyword">if</span> n == <span class="hljs-number">2</span> { isReady.send() }                        <span class="hljs-comment">/// isReady發出值</span>
+  }
+}
+</pre>
+<pre data-origin="=== 範例: prefix(untilOutputFrom:) ===
+1
+2
+完成: finished
+" class="bash hljs">=== 範例: prefix(untilOutputFrom:) ===
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+完成: finished
+</pre>
 </li></ul>
 
 

@@ -12,7 +12,8 @@ public func example(of description: String, action: () -> Void) {
 }
 ```
 
-## Notification vs Combine
+
+## Lesson.01 - Notification vs Combine
 ### [通知 - Notification](https://www.appcoda.com.tw/notificationcenter/)
 - 先以一個iOS基本的Notification為基準
 - 
@@ -425,8 +426,8 @@ Received value 5
 Received value 6
 ```
 
-## [eraseToAnyPublisher()](https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;&#41)
-### 轉成AnyPublisher
+### [eraseToAnyPublisher()](https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;&#41)
+- 轉成AnyPublisher
 - 讓Publisher的類型[簡單化](https://ithelp.ithome.com.tw/articles/10221967)
 - 
 ```swift
@@ -480,7 +481,7 @@ Element: 3
 Completed.
 ```
 
-## Operators也是Publisher
+## Lesson.02 - Operators也是Publisher
 ### [collect()](https://juejin.cn/post/7017265258263740424)
 - 將單一值做分組…
 ```swift
@@ -666,3 +667,287 @@ example(of: "scan") {
 ```
 ![](image/Scan.png)
 
+## Lesson.03 - 過濾用的Operator
+### [filter()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v2.0/chapters/4-filtering-operators)
+- 過濾之用，跟[filter()](https://www.inote.tw/swift-array-filter)很像
+- ```swift
+example(of: "filter") {
+    
+    let multiple = 3
+    let numbers = (1...10).publisher
+    
+    numbers
+        .filter { $0.isMultiple(of: multiple) }
+        .sink(receiveValue: { number in print("\(number) 是 \(multiple) 的倍數 !!!")})
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: filter ===
+3 是 3 的倍數 !!!
+6 是 3 的倍數 !!!
+9 是 3 的倍數 !!!
+```
+
+### [removeDuplicates()](https://paigeshin1991.medium.com/swift-combine-removeduplicates-you-can-totally-misuse-it-if-you-dont-read-this-9bf9c3c36296)
+- 取得非重複資料，跟SQL的[SELECT DISTINCT](https://www.fooish.com/sql/distinct.html)功能很像
+```swift
+example(of: "removeDuplicates") {
+
+  let words = "hey hey there! want to listen to mister mister ?"
+                  .components(separatedBy: " ")
+                  .publisher
+  words
+    .removeDuplicates()
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+}
+```
+```bash
+hey
+there!
+want
+to
+listen
+to
+mister
+?
+```
+
+### [compactMap()](https://juejin.cn/post/7017623451858894862)
+- 把Optional值去除，跟[compactMap()](https://medium.com/jeremy-xue-s-blog/swift-transforming-an-array-e2bcb4f4d67d)很像
+```swift
+example(of: "compactMap") {
+    
+    let strings = ["a", "1.24", "3", "def", "45", "0.23"].publisher
+    
+    strings
+        .compactMap { Float($0) }               /// 過濾Float
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: compactMap ===
+1.24
+3.0
+45.0
+0.23
+```
+
+### [ignoreOutput()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators)
+- 取得的值不重要，只關心[完成](https://zhuanlan.zhihu.com/p/341961251)了沒有
+```swift
+example(of: "ignoreOutput") {
+
+    let numbers = (1...10_000).publisher
+
+    numbers
+        .ignoreOutput()
+        .sink(
+            receiveCompletion: { print("完成: \($0)") },
+            receiveValue: { print($0) }
+        )
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: ignoreOutput ===
+完成: finished
+```
+
+### [first(where:)](https://juejin.cn/post/7017623451858894862)
+- 取得第一個符合過濾的值
+```swift
+example(of: "first(where:)") {
+    
+    let multiple = 2
+    let numbers = (1...9).publisher
+    
+    numbers
+        .print("numbers")
+        .first(where: { $0 % multiple == 0 })
+        .sink(
+            receiveCompletion: { print("完成: \($0)") },
+            receiveValue: { print("第一個偶數: \($0)") }
+        )
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: first(where:) ===
+numbers: receive subscription: (1...9)
+numbers: request unlimited
+numbers: receive value: (1)
+numbers: receive value: (2)
+numbers: receive cancel
+第一個偶數: 2
+完成: finished
+```
+
+### [last(where:)](https://juejin.cn/post/7017623451858894862)
+- 取得最後一個符合過濾的值
+- 取得第一個很簡單，只要有符合就行了；但是最後一個的話，就要finished才可以
+```swift
+example(of: "last(where:)") {
+    
+    let numbers = PassthroughSubject<Int, Never>()
+    
+    numbers
+        .last(where: { $0 % 2 == 0 })
+        .sink(
+            receiveCompletion: { print("完成: \($0)") },
+            receiveValue: { print("最後一個偶數: \($0)") }
+        )
+        .store(in: &subscriptions)
+    
+    numbers.send(1)
+    numbers.send(2)
+    numbers.send(3)
+    numbers.send(4)
+    numbers.send(5)
+    numbers.send(completion: .finished)		/// 要執行這個後才有值
+}
+```
+```bash
+=== 範例: last(where:) ===
+最後一個偶數: 4
+完成: finished
+```
+
+### [dropFirst()](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/4-filtering-operators)
+- 忽略掉前面的值
+```swift
+example(of: "dropFirst") {
+    
+    let numbers = (1...10).publisher
+    
+    numbers
+        .dropFirst(8)       /// 忽略掉前8組
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: dropFirst ===
+9
+10
+```
+
+### [drop(while:)](https://juejin.cn/post/7017853525271150599)
+- 有條件的忽略掉數值
+```swift
+example(of: "drop(while:)") {
+
+    let numbers = (1...10).publisher
+
+    numbers
+        .drop(while: { print("x"); return $0 % 5 != 0})
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: dropFirst ===
+9
+10
+```
+
+### [drop(while:)](https://juejin.cn/post/7017853525271150599)
+- 有條件的忽略掉數值
+```swift
+example(of: "drop(untilOutputFrom:)") {
+    
+    let isReady = PassthroughSubject<Void, Never>()
+    let taps = PassthroughSubject<Int, Never>()
+    
+    taps.drop(untilOutputFrom: isReady)         /// 直到isReady變數發出值之後才動作
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+    
+    (1...5).forEach { n in
+        taps.send(n)                            /// 在isReady發出值之前都是沒有用的
+        if n == 3 { isReady.send() }            /// isReady發出值
+    }
+}
+```
+```bash
+=== 範例: drop(untilOutputFrom:) ===
+4
+5
+```
+
+### [prefix(while:)](https://juejin.cn/post/7017853525271150599)
+- 跟drop(while:)相反的功能，只取前面幾組，後面的不重要
+```swift
+example(of: "prefix(while:)") {
+    
+    let numbers = (1...10).publisher
+    
+    numbers
+        .prefix(while: { $0 < 3 })
+        .sink(
+            receiveCompletion: { print("完成: \($0)") },
+            receiveValue: { print($0) }
+        )
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: prefix(while:) ===
+1
+2
+完成: finished
+```
+
+### [prefix(while:)](https://juejin.cn/post/7017853525271150599)
+- 跟drop(while:)相反的功能，只取前面幾組，後面的不重要
+```swift
+example(of: "prefix(while:)") {
+    
+    let numbers = (1...10).publisher
+    
+    numbers
+        .prefix(while: { $0 < 3 })
+        .sink(
+            receiveCompletion: { print("完成: \($0)") },
+            receiveValue: { print($0) }
+        )
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: prefix(while:) ===
+1
+2
+完成: finished
+```
+
+### [prefix(untilOutputFrom:)](https://juejin.cn/post/7017853525271150599)
+- 跟drop(untilOutputFrom:)相反的功能，只取前面幾組，後面的不重要
+```swift
+example(of: "prefix(untilOutputFrom:)") {
+    
+    let isReady = PassthroughSubject<Void, Never>()
+    let taps = PassthroughSubject<Int, Never>()
+    
+    taps
+        .prefix(untilOutputFrom: isReady)                   /// 直到isReady變數發出值之後不停止
+        .sink(
+            receiveCompletion: { print("完成: \($0)") },
+            receiveValue: { print($0) }
+        )
+        .store(in: &subscriptions)
+    
+    (1...5).forEach { n in
+        taps.send(n)                                        /// 在isReady發出值之前一直是有效的
+        if n == 2 { isReady.send() }                        /// isReady發出值
+    }
+}
+```
+```bash
+=== 範例: prefix(untilOutputFrom:) ===
+1
+2
+完成: finished
+```
