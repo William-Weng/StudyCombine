@@ -1,0 +1,668 @@
+# [Swift Combine - iOS 13](https://developer.apple.com/documentation/combine)
+
+## [轉移到 Combine](https://medium.com/jeremy-xue-s-blog/swift-轉移到-combine-9b9cc91a0748)
+- 先做一個[公用程式](https://heckj.github.io/swiftui-notes/index_zh-CN.html)，印出範例用…
+- 其實，Combine的功能有很大一部分是用到[Result&lt;Value, Error>](https://medium.com/彼得潘的-swift-ios-app-開發問題解答集/成功和失敗二擇一的-result-type-e234c6fccc9c)的設定，成功和失敗二擇一的參數應用…
+- Combine也是有所謂的[生命週期](https://ithelp.ithome.com.tw/articles/10217930)
+- 當然[RxJS Marbles的彈珠圖](https://rxmarbles.com/)也是可以參考的…
+```swift
+public func example(of description: String, action: () -> Void) {
+    print("\n=== 範例: \(description) ===")
+    action()
+}
+```
+
+## Notification vs Combine
+### [通知 - Notification](https://www.appcoda.com.tw/notificationcenter/)
+- 先以一個iOS基本的Notification為基準
+- 
+```swift
+example(of: "Notification") {
+    
+    let myNotification = Notification.Name("MyNotification")
+    let center = NotificationCenter.default
+    let observer = center.addObserver(forName: myNotification, object: nil, queue: nil) { notification in print("\(notification.object!)") }
+    let object = "「張君雅小妹妹，恁兜的泡麵已經煮好了，恁阿嬤限妳一分鐘內趕緊回去呷；哪嘸，到時麵若爛去，伊是概不負責！」"
+    
+    center.post(name: myNotification, object: object)
+    center.removeObserver(observer)
+}
+```
+```bash
+=== 範例: Notification ===
+「張君雅小妹妹，恁兜的泡麵已經煮好了，恁阿嬤限妳一分鐘內趕緊回去呷；哪嘸，到時麵若爛去，伊是概不負責！」
+```
+
+### [發布者 - Publisher](https://developer.apple.com/documentation/foundation/notificationcenter/publisher)
+- 可以類比成NotificationCenter.default.post()的功能
+- 有發布訊息的功能 (單向)
+- 
+```swift
+example(of: "Publisher") {
+    
+    let myNotification = Notification.Name("MyNotification")
+    let center = NotificationCenter.default
+    let publisher = center.publisher(for: myNotification, object: nil)
+    
+    center.post(name: myNotification, object: nil)
+}
+```
+
+### 訂閱者 - Subscriber
+- 可以類比成NotificationCenter.default.addObserver()的功能
+- 有收接訊息的功能 (單向)
+- 
+```swift
+example(of: "Subscriber") {
+    
+    let myNotification = Notification.Name("MyNotification")
+    let center = NotificationCenter.default
+    let publisher = center.publisher(for: myNotification, object: nil)
+    let subscription = publisher.sink { _ in print("收到從發布者傳來的通知了") }
+    
+    center.post(name: myNotification, object: nil)
+    subscription.cancel()
+}
+```
+
+## 我心中的Combine
+![](image/Combine.png)
+
+## 初學Publisher
+### Just
+- 使用Combine時，最基本的Publisher
+- 一個發布者，可由多個訂閱者接收
+- 
+```swift
+example(of: "Just") {
+    
+    let just = Just("Hello world!")
+    
+    let subscription_1 = just.sink(
+        receiveCompletion: {
+            print("Received completion: ", $0)
+        },
+        receiveValue: {
+            print("Received value: ", $0)
+        })
+    
+    let subscription_2 = just.sink(
+        receiveCompletion: {
+            print("Received completion (another): ", $0)
+        },
+        receiveValue: {
+            print("Received value (another): ", $0)
+        })
+    
+    subscription_1.cancel()
+    subscription_2.cancel()
+}
+```
+```bash
+=== 範例: Just ===
+Received value:  Hello world!
+Received completion:  finished
+Received value (another):  Hello world!
+Received completion (another):  finished
+```
+
+## Combine運算子
+### [儲存數值 - assign(to:on:)](https://developer.apple.com/documentation/combine/just/assign(to:on:&#41;)
+- 萬物都可以轉成Publisher，試著把Array轉成Publisher
+- 利用assign(to:on:)，把發布者發布的值存到變數裡面
+- 從didSet()取值 => [KVO - Key-Value Observing](https://davidlinnn.medium.com/swift-4-kvo-筆記-4c89a996e022)
+- 
+```swift
+example(of: "assign(to:on:)") {
+    
+    final class SomeObject {
+        var value: String = "" {
+            didSet { print(value) }
+        }
+    }
+    
+    let array = ["Hello", "world!"]
+    let object = SomeObject()
+    let publisher = array.publisher
+    
+    _ = publisher.assign(to: \.value, on: object)
+}
+```
+```bash
+=== 範例: assign(to:on:) ===
+Hello
+world!
+```
+
+### [儲存數值 - assign(to:)](https://developer.apple.com/documentation/combine/just/assign(to:&#41;)
+- 這是個相當經典的例子
+- 利用[@Published](https://medium.com/彼得潘的-swift-ios-app-開發教室/swiftui-什麼是-published-observableobject-eb950f8295a)，將變數value轉成Publisher，這時候的value就要用$value來處理
+- 而要存到變數value，就要使用&object來處理
+- 使用[sink()](https://developer.apple.com/documentation/combine/just/sink(receivevalue:&#41;)取值，而不是從數值去取值了
+- 
+```swift
+example(of: "assign(to:)") {
+    
+    final class SomeObject {
+        @Published var value = 0
+    }
+    
+    let object = SomeObject()
+    object.$value.sink { print("收到的值為: \($0)") }
+    
+    (0..<10).publisher.assign(to: &object.$value)
+}
+```
+```bash
+=== 範例: assign(to:) ===
+收到的值為: 0
+收到的值為: 0
+收到的值為: 1
+收到的值為: 2
+收到的值為: 3
+收到的值為: 4
+收到的值為: 5
+收到的值為: 6
+收到的值為: 7
+收到的值為: 8
+收到的值為: 9
+```
+
+### 自訂Subscriber
+- 只要使用協定Subscriber就可以自己產生一個自訂Subscriber
+- 如果使用subscription.request(.max(3)) + return .none，就只會印三個，而且不會結束
+- 但如果把return .none改成return .unlimited，就只會印全部，而且會結束
+- 
+```swift
+example(of: "Custom Subscriber") {
+
+    final class MagazineSubscriber: Subscriber {
+
+        typealias Input = String                                // 雜誌名稱是文字
+        typealias Failure = Never                               // 不處理錯誤
+
+        private let maxCount = 3
+        
+        private var count = 0
+        private var subscription: Subscription?
+        
+        func receive(subscription: Subscription) {
+            print(subscription)
+            
+            self.subscription = subscription                    // 在這裡，你可以保存subscription，並告訴出版社你要接收雜誌
+            subscription.request(.unlimited)                    // 請求出版商無限制數量的雜誌
+        }
+
+        func receive(_ input: Input) -> Subscribers.Demand {
+
+            print("Received value", input, count)               // 在這裡，你可以處理收到的雜誌內容
+            count += 1
+            
+            if (count >= maxCount) { subscription?.cancel() }   // 它表明訂閱者不再需要額外的項目 (目標到達，取消訂閱)
+            return .unlimited                                   // 請求接收更多的雜誌
+        }
+
+        func receive(completion: Subscribers.Completion<Never>) {
+            print("Received completion", completion)
+        }
+    }
+
+    let magazines = ["ABC互動英語", "LIVE互動英語", "CNN互動英語", "互動日本語", "跟我一起學日語", "KOREA韓語學習誌"]
+    
+    let publisher = magazines.publisher                         // Array => Publisher
+    let subscriber = MagazineSubscriber()
+
+    publisher.subscribe(subscriber)
+}
+```
+```bash
+=== 範例: Custom Subscriber ===
+["ABC互動英語", "LIVE互動英語", "CNN互動英語", "互動日本語", "跟我一起學日語", "KOREA韓語學習誌"]
+Received value ABC互動英語 0
+Received value LIVE互動英語 1
+Received value CNN互動英語 2
+```
+
+## Publisher
+### [Future - 非同步Publisher](https://developer.apple.com/documentation/combine/future)
+- 聽名字就知道，接收未來資料與事件[非同步](https://www.jianshu.com/p/c5dbc67fcfcb)的Publisher
+- 在這裡我們讓它停止3秒，再顯示值
+- 
+```swift
+var subscriptions = Set<AnyCancellable>()
+example(of: "Future") {
+    
+    func futureIncrement(integer: Int, afterDelay delay: UInt32) -> Future<Int, Never> {
+        
+        Future<Int, Never> { promise in
+            print("Original => \(integer)")
+            sleep(delay)
+            promise(.success(integer + 1))
+        }
+    }
+    
+    let future = futureIncrement(integer: 1, afterDelay: 3)
+    
+    future
+        .sink(receiveCompletion: { print("Completion => \($0)") }, receiveValue: { print("Value => \($0)") })
+        .store(in: &subscriptions)
+    
+    future
+        .sink(receiveCompletion: { print("Completion => \($0)") }, receiveValue: { print("Value => \($0)") })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: Future ===
+Original => 1
+Value => 2
+Completion => finished
+Value => 2
+Completion => finished
+```
+
+## [Subject - Publisher 延展類](https://louyu.cc/articles/ios-swift/2021/03/?p=2857/)
+### [PassthroughSubject](https://ithelp.ithome.com.tw/articles/10219418)
+- 與之前我們討論的 Publisher 不同的是，Subject 的最大特點就是可以手動傳送資料
+- 
+```swift
+example(of: "PassthroughSubject") {
+
+    enum MyError: Error {
+        case test
+    }
+
+    final class StringSubscriber: Subscriber {
+
+        typealias Input = String
+        typealias Failure = MyError
+
+        func receive(subscription: Subscription) {
+            subscription.request(.max(2))
+        }
+
+        func receive(_ input: String) -> Subscribers.Demand {
+            print("Received value (input): ", input)
+            return input == "World" ? .max(1) : .none
+        }
+
+        func receive(completion: Subscribers.Completion<MyError>) {
+            print("Received completion (input): ", completion)
+        }
+    }
+
+    let subscriber = StringSubscriber()
+    let subject = PassthroughSubject<String, MyError>()
+
+    subject.subscribe(subscriber)
+
+    let subscription = subject
+        .sink(
+            receiveCompletion: { completion in print("Received completion (sink): ", completion) },
+            receiveValue: { value in print("Received value (sink): ", value) }
+        )
+
+    subject.send("Hello")
+    subject.send("World")
+
+    subscription.cancel()
+
+    subject.send("Still there?")
+
+    // subject.send(completion: .failure(MyError.test))
+    subject.send(completion: .finished)
+
+    subject.send("How about another one?")
+}
+```
+```bash
+=== 範例: PassthroughSubject ===
+Received value (sink):  Hello
+Received value (input):  Hello
+Received value (sink):  World
+Received value (input):  World
+Received value (input):  Still there?
+Received completion:  finished
+```
+
+### [CurrentValueSubject - Publisher 延展類](https://www.avanderlee.com/combine/passthroughsubject-currentvaluesubject-explained/)
+- 與 PassthroughSubject 不同，CurrentValueSubject 會保留一個最後的資料，並在被訂閱時將這個資料傳送給下游的 Publisher 或 Subscriber。
+- 
+```SWift
+example(of: "CurrentValueSubject") {
+    
+    let subject = CurrentValueSubject<Int, Never>(0)	// 設定初值
+    
+    subject
+        .print()
+        .sink(receiveValue: { print("First subscription: \($0)") })
+        .store(in: &subscriptions)
+    
+    subject.send(1)
+    subject.send(2)
+    
+    print(subject.value)
+    
+    subject.value = 3
+    print(subject.value)
+
+    subject
+        .print()
+        .sink(receiveValue: { print("Second subscription:", $0) })
+        .store(in: &subscriptions)
+    
+    subject.send(completion: .finished)
+}
+```
+```bash
+=== 範例: CurrentValueSubject ===
+receive subscription: (CurrentValueSubject)
+request unlimited
+receive value: (0)
+First subscription: 0
+receive value: (1)
+First subscription: 1
+receive value: (2)
+First subscription: 2
+2
+receive value: (3)
+First subscription: 3
+3
+receive subscription: (CurrentValueSubject)
+request unlimited
+receive value: (3)
+Second subscription: 3
+receive finished
+receive finished
+```
+
+### [自動校正Demand](https://developer.apple.com/documentation/combine/subscribers/demand)
+- 這裡是自動根據輸入的值，去改變Subscribers.Demand
+- 
+```swift
+example(of: "Dynamically adjusting Demand") {
+    
+    final class IntSubscriber: Subscriber {
+        
+        typealias Input = Int
+        typealias Failure = Never
+        
+        func receive(subscription: Subscription) {
+            subscription.request(.max(3))   // .max(3): 初始值
+        }
+        
+        func receive(_ input: Int) -> Subscribers.Demand {
+            
+            print("Received value", input)
+            
+            switch input {                  // 累加的 =>
+            case 1: return .max(2)          // .max(3) + .max(2) = .max(4)
+            case 3: return .max(1)          // .max(4) + .max(1) = .max(5)
+            default: return .none           // .max(5)
+            }
+        }
+        
+        func receive(completion: Subscribers.Completion<Never>) {
+            print("Received completion: ", completion)
+        }
+    }
+    
+    let subscriber = IntSubscriber()
+    let subject = PassthroughSubject<Int, Never>()
+    
+    subject.subscribe(subscriber)
+    
+    (1...10).forEach { subject.send($0) }
+}
+```
+```bash
+=== 範例: Dynamically adjusting Demand ===
+Received value 1
+Received value 2
+Received value 3
+Received value 4
+Received value 5
+Received value 6
+```
+
+## [eraseToAnyPublisher()](https://developer.apple.com/documentation/combine/publisher/erasetoanypublisher(;&#41)
+### 轉成AnyPublisher
+- 讓Publisher的類型[簡單化](https://ithelp.ithome.com.tw/articles/10221967)
+- 
+```swift
+example(of: "Type erasure") {
+    
+    let subject = PassthroughSubject<Int, Never>()  // PassthroughSubject<Int, Never>
+    let publisher = subject.eraseToAnyPublisher()   // PassthroughSubject<Int, Never> => AnyPublisher<Int, Never>
+    
+    publisher
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+    
+    subject.send(0)
+    // publisher.send(1)    // ∵ 轉成了AnyPublisher<Int, Never> ∴ 沒有send()
+}
+```
+```bash
+=== 範例: Type erasure ===
+0
+```
+
+### async / await
+- 非同步使用的範例
+- 
+```swift
+example(of: "async / await") {
+    
+    let subject = CurrentValueSubject<Int, Never>(0)    // 設定初值 = 0
+    
+    Task {
+        for await element in subject.values { print("Element: \(element)") }
+        print("Completed.")
+    }
+    
+    sleep(2)
+    subject.send(1)     // 可以使用在非同步之上
+    sleep(2)
+    subject.send(2)
+    sleep(2)
+    subject.send(3)
+    
+    subject.send(completion: .finished)
+}
+```
+```bash
+=== 範例: async / await ===
+Element: 0
+Element: 1
+Element: 2
+Element: 3
+Completed.
+```
+
+## Operators也是Publisher
+### [collect()](https://juejin.cn/post/7017265258263740424)
+- 將單一值做分組…
+```swift
+example(of: "collect") {
+    
+    let array = ["A", "B", "C", "D", "E"]
+    
+    array.publisher
+        .collect(2)     // 2個2個一組，預設是1組；如果不加它的話，就是一個一個單獨輸出
+        .sink(
+            receiveCompletion: { print($0) },
+            receiveValue: { print($0) }
+        )
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: collect ===
+["A", "B"]
+["C", "D"]
+["E"]
+finished
+```
+
+### [map()](https://cocoacasts.com/combine-essentials-how-to-use-combine-map-and-compactmap-operators)
+- 其實這個跟swift的[高階函數 - map](https://franksios.medium.com/swift3-高階函數-higher-order-function-a97cf4577a11)很像，把值一個個處理，然後轉成另一種數值…
+```swift
+example(of: "map") {
+    
+    let array = [123, 4, 56]
+    let formatter = NumberFormatter()
+    
+    formatter.numberStyle = .spellOut
+    
+    array.publisher
+        .map({ value in
+            formatter.string(for: NSNumber(integerLiteral: value)) ?? ""
+        })
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: map ===
+one hundred twenty-three
+four
+fifty-six
+```
+- 使用座標(x,y)當成map()的範例
+```swift
+example(of: "mapping key paths") {
+
+    let publisher = PassthroughSubject<Coordinate, Never>()
+    
+    publisher
+        .map(\.x, \.y)      // 也可以這樣取值 (Coordinate.x / Coordinate.y)
+        .sink(receiveValue: { x, y in
+            guard let quadrant = quadrantOf(x: x, y: y) else { print("座標在 (\(x), \(y)) 在軸上"); return }
+            print("座標在 (\(x), \(y)) 第\(quadrant)象限")
+        })
+        .store(in: &subscriptions)
+    
+    publisher.send(Coordinate(x: 10, y: -8))
+    publisher.send(Coordinate(x: 0, y: 5))
+}
+```
+```bash
+=== 範例: mapping key paths ===
+座標在 (10, -8) 第4象限
+座標在 (0, 5) 在軸上
+```
+
+### [tryMap()](https://juejin.cn/post/7023214404007264263)
+- 有錯誤處理的map
+```swift
+example(of: "tryMap") {
+    
+    Just("資料夾名稱不存在!!!")
+        .tryMap { try FileManager.default.contentsOfDirectory(atPath: $0) }
+        .sink(
+            receiveCompletion: { print("Completion: \($0)") },
+            receiveValue: { print("ReceiveValue: \($0)") }
+        )
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: tryMap ===
+Completion: failure(Error Domain=NSCocoaErrorDomain Code=260 "The folder “資料夾名稱不存在!!!” doesn’t exist." UserInfo={NSUserStringVariant=(
+    Folder
+), NSFilePath=資料夾名稱不存在!!!, NSUnderlyingError=0x600003aff900 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}})
+```
+
+### [flatMap()](https://kingnight.github.io/programming/2020/10/29/Combine中重要函数flatMap.html)
+- 字如其義，就是扁平化的意思 - flat，把Publishers => 單一個Publisher (Publisher轉換)
+```swift
+example(of: "flatMap") {
+    
+    func decode(_ codes: [Int]) -> AnyPublisher<String, Never> {
+        
+        Just(codes.compactMap { code in
+            guard (32...255).contains(code) else { return nil }
+            return String(UnicodeScalar(code) ?? " ")
+        }.joined())
+        .eraseToAnyPublisher()
+    }
+    
+    let array = [72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33, 33, 33]    /// Hello, World!!! (ASCII)
+    
+    array.publisher
+        .collect()
+        .flatMap(decode)                                                                /// 可以接收一個個數值 Publishers => 單一個Publisher
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: flatMap ===
+Hello, World!!!
+```
+
+### [replaceNil(with:)](https://cocoacasts.com/combine-essentials-how-to-use-combine%27s-replacenil-operator)
+- 字如其義，就是處理nil值，有點像 (value ?? "-")
+```swift
+// 06. 處理nil數值 => 有點像 (value ?? "-")
+example(of: "replaceNil") {
+    ["A", nil, "C"].publisher
+        .eraseToAnyPublisher()
+        .replaceNil(with: "-")      /// 可以試試不使用它的結果
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: replaceNil ===
+A
+-
+C
+```
+
+### [replaceEmpty(with:)](https://juejin.cn/post/7017356750735015966)
+- 字如其義，就是處理空值，用在演示或測試用
+- ```swift
+example(of: "replaceEmpty(with:)") {
+    
+    let empty = Empty<String, Never>()
+    
+    empty
+        .replaceEmpty(with: "Test")      /// 可以試試不使用它的結果
+        .sink(
+            receiveCompletion: { print($0) },
+            receiveValue: { print($0) }
+        )
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: replaceEmpty(with:) ===
+Test
+finished
+```
+
+### [scan()](https://juejin.cn/s/swift combine scan example)
+- 累加之用，很像[reduce()](https://medium.com/彼得潘的-swift-ios-app-開發教室/array-的高階函式-filter-map-and-reduce-39fb8ba5a9f7)
+- ```swift
+example(of: "scan") {
+    
+    let initValue = 50
+    let maxCount = 10
+    var dailyGainLoss: Int { .random(in: -maxCount...maxCount) }    /// 將產生-10 ~ 10的隨時數
+    
+    let june2023 = (0..<maxCount)                                   /// 產生10組
+        .map { _ in dailyGainLoss }                                 /// [Int]
+        .publisher
+    
+    june2023
+        .scan(initValue) { latest, current in
+            max(0, latest + current)                                /// 累加
+        }
+        .sink(receiveValue: { _ in })
+        .store(in: &subscriptions)
+}
+```
+![](image/Scan.png)
+

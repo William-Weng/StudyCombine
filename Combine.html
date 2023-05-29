@@ -86,7 +86,7 @@
   subscription.cancel()
 }
 </pre>
-</li></ul><h2 id="我心中的combine"><a name="我心中的combine" href="#我心中的combine"></a>我心中的Combine</h2><p><img src="./Image/Combine.png" alt=""></p><h2 id="初學publisher"><a name="初學publisher" href="#初學publisher"></a>初學Publisher</h2><h3 id="just"><a name="just" href="#just"></a>Just</h3><ul>
+</li></ul><h2 id="我心中的combine"><a name="我心中的combine" href="#我心中的combine"></a>我心中的Combine</h2><p><img src="image/Combine.png" alt=""></p><h2 id="初學publisher"><a name="初學publisher" href="#初學publisher"></a>初學Publisher</h2><h3 id="just"><a name="just" href="#just"></a>Just</h3><ul>
 <li>使用Combine時，最基本的Publisher</li><li>一個發布者，可由多個訂閱者接收</li><li><pre data-origin="example(of: &quot;Just&quot;) {
 
   let just = Just(&quot;Hello world!&quot;)
@@ -947,6 +947,103 @@ Hello, World!!!
 " class="bash hljs">=== 範例: flatMap ===
 Hello, World!!!
 </pre>
+</li></ul><h3 id="[replacenil(with:)](https://cocoacasts.com/combine-essentials-how-to-use-combine%27s-replacenil-operator)"><a name="[replacenil(with:)](https://cocoacasts.com/combine-essentials-how-to-use-combine%27s-replacenil-operator)" href="#[replacenil(with:)](https://cocoacasts.com/combine-essentials-how-to-use-combine%27s-replacenil-operator)"></a><a href="https://cocoacasts.com/combine-essentials-how-to-use-combine%27s-replacenil-operator">replaceNil(with:)</a></h3><ul>
+<li>字如其義，就是處理nil值，有點像 (value ?? “-“)<pre data-origin="// 06. 處理nil數值 =&amp;gt; 有點像 (value ?? &quot;-&quot;)
+example(of: &quot;replaceNil&quot;) {
+  [&quot;A&quot;, nil, &quot;C&quot;].publisher
+      .eraseToAnyPublisher()
+      .replaceNil(with: &quot;-&quot;)      /// 可以試試不使用它的結果
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs"><span class="hljs-comment">// 06. 處理nil數值 =&gt; 有點像 (value ?? "-")</span>
+example(of: <span class="hljs-string">"replaceNil"</span>) {
+  [<span class="hljs-string">"A"</span>, <span class="hljs-literal">nil</span>, <span class="hljs-string">"C"</span>].publisher
+      .eraseToAnyPublisher()
+      .replaceNil(with: <span class="hljs-string">"-"</span>)      <span class="hljs-comment">/// 可以試試不使用它的結果</span>
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: replaceNil ===
+A
+-
+C
+" class="bash hljs">=== 範例: replaceNil ===
+A
+-
+C
+</pre>
+</li></ul><h3 id="[replaceempty(with:)](https://juejin.cn/post/7017356750735015966)"><a name="[replaceempty(with:)](https://juejin.cn/post/7017356750735015966)" href="#[replaceempty(with:)](https://juejin.cn/post/7017356750735015966)"></a><a href="https://juejin.cn/post/7017356750735015966">replaceEmpty(with:)</a></h3><ul>
+<li>字如其義，就是處理空值，用在演示或測試用</li><li><pre data-origin="example(of: &quot;replaceEmpty(with:)&quot;) {
+
+  let empty = Empty&amp;lt;String, Never&amp;gt;()
+
+  empty
+      .replaceEmpty(with: &quot;Test&quot;)      /// 可以試試不使用它的結果
+      .sink(
+          receiveCompletion: { print($0) },
+          receiveValue: { print($0) }
+      )
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"replaceEmpty(with:)"</span>) {
+
+  <span class="hljs-keyword">let</span> empty = <span class="hljs-type">Empty</span>&lt;<span class="hljs-type">String</span>, <span class="hljs-type">Never</span>&gt;()
+
+  empty
+      .replaceEmpty(with: <span class="hljs-string">"Test"</span>)      <span class="hljs-comment">/// 可以試試不使用它的結果</span>
+      .sink(
+          receiveCompletion: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: replaceEmpty(with:) ===
+Test
+finished
+" class="bash hljs">=== 範例: replaceEmpty(with:) ===
+Test
+finished
+</pre>
+</li></ul><h3 id="[scan()](https://juejin.cn/s/swift-combine-scan-example)"><a name="[scan()](https://juejin.cn/s/swift-combine-scan-example)" href="#[scan()](https://juejin.cn/s/swift-combine-scan-example)"></a><a href="https://juejin.cn/s/swift combine scan example">scan()</a></h3><ul>
+<li>累加之用，很像<a href="https://medium.com/彼得潘的-swift-ios-app-開發教室/array-的高階函式-filter-map-and-reduce-39fb8ba5a9f7">reduce()</a></li><li><pre data-origin="example(of: &quot;scan&quot;) {
+
+  let initValue = 50
+  let maxCount = 10
+  var dailyGainLoss: Int { .random(in: -maxCount...maxCount) }    /// 將產生-10 ~ 10的隨時數
+
+  let june2023 = (0..&amp;lt;maxCount)                                   /// 產生10組
+      .map { _ in dailyGainLoss }                                 /// [Int]
+      .publisher
+
+  june2023
+      .scan(initValue) { latest, current in
+          max(0, latest + current)                                /// 累加
+      }
+      .sink(receiveValue: { _ in })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"scan"</span>) {
+
+  <span class="hljs-keyword">let</span> initValue = <span class="hljs-number">50</span>
+  <span class="hljs-keyword">let</span> maxCount = <span class="hljs-number">10</span>
+  <span class="hljs-keyword">var</span> dailyGainLoss: <span class="hljs-type">Int</span> { .random(<span class="hljs-keyword">in</span>: -maxCount...maxCount) }    <span class="hljs-comment">/// 將產生-10 ~ 10的隨時數</span>
+
+  <span class="hljs-keyword">let</span> june2023 = (<span class="hljs-number">0</span>..&lt;maxCount)                                   <span class="hljs-comment">/// 產生10組</span>
+      .<span class="hljs-built_in">map</span> { <span class="hljs-number">_</span> <span class="hljs-keyword">in</span> dailyGainLoss }                                 <span class="hljs-comment">/// [Int]</span>
+      .publisher
+
+  june2023
+      .scan(initValue) { latest, current <span class="hljs-keyword">in</span>
+          <span class="hljs-built_in">max</span>(<span class="hljs-number">0</span>, latest + current)                                <span class="hljs-comment">/// 累加</span>
+      }
+      .sink(receiveValue: { <span class="hljs-number">_</span> <span class="hljs-keyword">in</span> })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<p><img src="image/Scan.png" alt=""></p>
 </li></ul>
 
 
