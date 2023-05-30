@@ -1489,6 +1489,733 @@ numbers: receive cancel
 <span class="hljs-number">2</span>
 完成: finished
 </pre>
+</li></ul><h2 id="lesson.04---結合用的operator"><a name="lesson.04---結合用的operator" href="#lesson.04---結合用的operator"></a>Lesson.04 - 結合用的Operator</h2><h3 id="[prepend(output...)](https://juejin.cn/post/7018447582229692452)"><a name="[prepend(output...)](https://juejin.cn/post/7018447582229692452)" href="#[prepend(output...)](https://juejin.cn/post/7018447582229692452)"></a><a href="https://juejin.cn/post/7018447582229692452">prepend(Output…)</a></h3><ul>
+<li><p>在原本的publisher之前加入數值，可以應用在一些一定要出現的介紹詞之上…</p>
+<pre data-origin="example(of: &quot;prepend(Output...)&quot;) {
+
+  let publisher = [&quot;新會員&quot;, &quot;William&quot;].publisher
+
+  publisher
+      .prepend(&quot;歡迎來到『人生40才開始』&quot;, &quot;別忘了繳入會費喲&quot;)   // 再在前面加上 [&quot;歡迎來到『人生40才開始』&quot;, &quot;別忘了繳入會費喲&quot;]
+      .prepend(&quot;嗨!!!&quot;, &quot;您好&quot;)                            // 先在前面加上 [&quot;嗨!!!&quot;, &quot;您好&quot;]  =&amp;gt; [&quot;嗨!!!&quot;, &quot;您好&quot;, &quot;歡迎來到『人生40才開始』&quot;, &quot;別忘了繳入會費喲&quot;]
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"prepend(Output...)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"新會員"</span>, <span class="hljs-string">"William"</span>].publisher
+
+  publisher
+      .prepend(<span class="hljs-string">"歡迎來到『人生40才開始』"</span>, <span class="hljs-string">"別忘了繳入會費喲"</span>)   <span class="hljs-comment">// 再在前面加上 ["歡迎來到『人生40才開始』", "別忘了繳入會費喲"]</span>
+      .prepend(<span class="hljs-string">"嗨!!!"</span>, <span class="hljs-string">"您好"</span>)                            <span class="hljs-comment">// 先在前面加上 ["嗨!!!", "您好"]  =&gt; ["嗨!!!", "您好", "歡迎來到『人生40才開始』", "別忘了繳入會費喲"]</span>
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: prepend(Output...) ===
+嗨!!!
+您好
+歡迎來到『人生40才開始』
+別忘了繳入會費喲
+新會員
+William
+" class="bash hljs">=== 範例: prepend(Output...) ===
+嗨!!!
+您好
+歡迎來到『人生<span class="hljs-number">40</span>才開始』
+別忘了繳入會費喲
+新會員
+William
+</pre>
+</li></ul><h3 id="[prepend(sequence)]()"><a name="[prepend(sequence)]()" href="#[prepend(sequence)]()"></a><a href="">prepend(Sequence)</a></h3><ul>
+<li>遵循<a href="https://developer.apple.com/documentation/swift/sequence">Sequence Protocol</a>的都可以使用</li><li><p>也就是有順序關係的，像：<a href="https://developer.apple.com/documentation/swift/array">Array</a> / <a href="https://developer.apple.com/documentation/swift/set">Set</a> / <a href="https://developer.apple.com/documentation/swift/stride(from:to:by:)">Stride</a></p>
+<pre data-origin="example(of: &quot;prepend(Sequence)&quot;) {
+
+  let publisher = [5, 6, 7].publisher
+  let array = [3, 4]                              // Array也可以
+  let set = Set(1...2)                            // Set也可以
+  let stride = stride(from: 6, to: 11, by: 2)     // Stride也可以
+
+  publisher
+      .prepend(array)
+      .prepend(set)
+      .prepend(stride)
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"prepend(Sequence)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">7</span>].publisher
+  <span class="hljs-keyword">let</span> array = [<span class="hljs-number">3</span>, <span class="hljs-number">4</span>]                              <span class="hljs-comment">// Array也可以</span>
+  <span class="hljs-keyword">let</span> <span class="hljs-keyword">set</span> = <span class="hljs-type">Set</span>(<span class="hljs-number">1</span>...<span class="hljs-number">2</span>)                            <span class="hljs-comment">// Set也可以</span>
+  <span class="hljs-keyword">let</span> <span class="hljs-built_in">stride</span> = <span class="hljs-built_in">stride</span>(from: <span class="hljs-number">6</span>, to: <span class="hljs-number">11</span>, by: <span class="hljs-number">2</span>)     <span class="hljs-comment">// Stride也可以</span>
+
+  publisher
+      .prepend(array)
+      .prepend(<span class="hljs-keyword">set</span>)
+      .prepend(<span class="hljs-built_in">stride</span>)
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: prepend(Sequence) ===
+6
+8
+10
+1
+2
+3
+4
+5
+6
+7
+" class="bash hljs">=== 範例: prepend(Sequence) ===
+<span class="hljs-number">6</span>
+<span class="hljs-number">8</span>
+<span class="hljs-number">10</span>
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+<span class="hljs-number">3</span>
+<span class="hljs-number">4</span>
+<span class="hljs-number">5</span>
+<span class="hljs-number">6</span>
+<span class="hljs-number">7</span>
+</pre>
+</li></ul><h3 id="[prepend(publisher)](https://developer.apple.com/documentation/combine/publisher/prepend(_:%#41;-v9sb)"><a name="[prepend(publisher)](https://developer.apple.com/documentation/combine/publisher/prepend(_:%#41;-v9sb)" href="#[prepend(publisher)](https://developer.apple.com/documentation/combine/publisher/prepend(_:%#41;-v9sb)"></a><a href="https://developer.apple.com/documentation/combine/publisher/prepend(_:%#41;-v9sb">prepend(Publisher)</a></h3><ul>
+<li><p>publisher當參數也可以</p>
+<pre data-origin="example(of: &quot;prepend(Publisher)&quot;) {
+
+  let publisher1 = [3, 4].publisher
+  let publisher2 = [1, 2].publisher
+
+  publisher1
+      .prepend(publisher2)
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"prepend(Publisher)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher1 = [<span class="hljs-number">3</span>, <span class="hljs-number">4</span>].publisher
+  <span class="hljs-keyword">let</span> publisher2 = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>].publisher
+
+  publisher1
+      .prepend(publisher2)
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: prepend(Publisher) ===
+1
+2
+3
+4
+" class="bash hljs">=== 範例: prepend(Publisher) ===
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+<span class="hljs-number">3</span>
+<span class="hljs-number">4</span>
+</pre>
+</li><li><p>這樣也行</p>
+<pre data-origin="example(of: &quot;prepend(Publisher) #2&quot;) {
+
+  let publisher1 = [3, 4].publisher
+  let publisher2 = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+
+  publisher1
+      .prepend(publisher2)
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+
+  publisher2.send(1)
+  publisher2.send(2)
+  publisher2.send(completion: .finished)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"prepend(Publisher) #2"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher1 = [<span class="hljs-number">3</span>, <span class="hljs-number">4</span>].publisher
+  <span class="hljs-keyword">let</span> publisher2 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+
+  publisher1
+      .prepend(publisher2)
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  publisher2.send(<span class="hljs-number">1</span>)
+  publisher2.send(<span class="hljs-number">2</span>)
+  publisher2.send(completion: .finished)
+}
+</pre>
+<pre data-origin="=== 範例: prepend(Publisher) #2 ===
+1
+2
+3
+4
+" class="bash hljs">=== 範例: prepend(Publisher) <span class="hljs-comment">#2 ===</span>
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+<span class="hljs-number">3</span>
+<span class="hljs-number">4</span>
+</pre>
+</li></ul><h3 id="[append(output...)](https://juejin.cn/post/7018447582229692452)"><a name="[append(output...)](https://juejin.cn/post/7018447582229692452)" href="#[append(output...)](https://juejin.cn/post/7018447582229692452)"></a><a href="https://juejin.cn/post/7018447582229692452">append(Output…)</a></h3><ul>
+<li><p>append正好跟prepend相反，它是加在後面的功能…</p>
+<pre data-origin="example(of: &quot;append(Output...)&quot;) {
+
+  let publisher = [&quot;您好&quot;, &quot;我是William&quot;].publisher
+
+  publisher
+      .append(&quot;-演出人員名單-&quot;, &quot;-配樂清單-&quot;)
+      .append(&quot;~終~&quot;)
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"append(Output...)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"您好"</span>, <span class="hljs-string">"我是William"</span>].publisher
+
+  publisher
+      .append(<span class="hljs-string">"-演出人員名單-"</span>, <span class="hljs-string">"-配樂清單-"</span>)
+      .append(<span class="hljs-string">"~終~"</span>)
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: append(Output...) ===
+您好
+我是William
+-演出人員名單-
+-配樂清單-
+~終~
+" class="bash hljs">=== 範例: append(Output...) ===
+您好
+我是William
+-演出人員名單-
+-配樂清單-
+~終~
+</pre>
+</li><li><p>這樣也可以</p>
+<pre data-origin="example(of: &quot;append(Output...) #2&quot;) {
+
+  let publisher = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+
+  publisher
+      .append(3, 4)
+      .append(5)
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+
+  publisher.send(1)
+  publisher.send(2)
+  publisher.send(completion: .finished)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"append(Output...) #2"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+
+  publisher
+      .append(<span class="hljs-number">3</span>, <span class="hljs-number">4</span>)
+      .append(<span class="hljs-number">5</span>)
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  publisher.send(<span class="hljs-number">1</span>)
+  publisher.send(<span class="hljs-number">2</span>)
+  publisher.send(completion: .finished)
+}
+</pre>
+<pre data-origin="=== 範例: append(Output...) #2 ===
+1
+2
+3
+4
+5
+" class="bash hljs">=== 範例: append(Output...) <span class="hljs-comment">#2 ===</span>
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+<span class="hljs-number">3</span>
+<span class="hljs-number">4</span>
+<span class="hljs-number">5</span>
+</pre>
+</li></ul><h3 id="[append(sequence)](https://juejin.cn/post/7018447582229692452)"><a name="[append(sequence)](https://juejin.cn/post/7018447582229692452)" href="#[append(sequence)](https://juejin.cn/post/7018447582229692452)"></a><a href="https://juejin.cn/post/7018447582229692452">append(Sequence)</a></h3><ul>
+<li><p>跟append(Sequence)相反，就不多做介紹了</p>
+<pre data-origin="example(of: &quot;append(Sequence)&quot;) {
+
+  let publisher = [1, 2, 3].publisher
+
+  publisher
+      .append([4, 5])
+      .append(Set([6, 7]))
+      .append(stride(from: 8, to: 11, by: 2))
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"append(Sequence)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>].publisher
+
+  publisher
+      .append([<span class="hljs-number">4</span>, <span class="hljs-number">5</span>])
+      .append(<span class="hljs-type">Set</span>([<span class="hljs-number">6</span>, <span class="hljs-number">7</span>]))
+      .append(<span class="hljs-built_in">stride</span>(from: <span class="hljs-number">8</span>, to: <span class="hljs-number">11</span>, by: <span class="hljs-number">2</span>))
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: append(Sequence) ===
+1
+2
+3
+4
+5
+7
+6
+8
+10
+" class="bash hljs">=== 範例: append(Sequence) ===
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+<span class="hljs-number">3</span>
+<span class="hljs-number">4</span>
+<span class="hljs-number">5</span>
+<span class="hljs-number">7</span>
+<span class="hljs-number">6</span>
+<span class="hljs-number">8</span>
+<span class="hljs-number">10</span>
+</pre>
+</li></ul><h3 id="[append(publisher)](https://juejin.cn/post/7018447582229692452)"><a name="[append(publisher)](https://juejin.cn/post/7018447582229692452)" href="#[append(publisher)](https://juejin.cn/post/7018447582229692452)"></a><a href="https://juejin.cn/post/7018447582229692452">append(Publisher)</a></h3><ul>
+<li><p>跟append(Publisher)相反，也不多做介紹了</p>
+<pre data-origin="example(of: &quot;append(Publisher)&quot;) {
+
+  let publisher1 = [1, 2].publisher
+  let publisher2 = [3, 4].publisher
+
+  publisher1
+      .append(publisher2)
+      .sink(receiveValue: { print($0) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"append(Publisher)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher1 = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>].publisher
+  <span class="hljs-keyword">let</span> publisher2 = [<span class="hljs-number">3</span>, <span class="hljs-number">4</span>].publisher
+
+  publisher1
+      .append(publisher2)
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: append(Publisher) ===
+1
+2
+3
+4
+" class="bash hljs">=== 範例: append(Publisher) ===
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+<span class="hljs-number">3</span>
+<span class="hljs-number">4</span>
+</pre>
+</li></ul><h3 id="[switchtolatest](https://zhuanlan.zhihu.com/p/345054834)"><a name="[switchtolatest](https://zhuanlan.zhihu.com/p/345054834)" href="#[switchtolatest](https://zhuanlan.zhihu.com/p/345054834)"></a><a href="https://zhuanlan.zhihu.com/p/345054834">switchToLatest</a></h3><ul>
+<li>切換到最後一個Publisher</li><li><p>在應用上的話，就像及時搜尋單字框，會一直送request，但是我們只需要最後一次的單字就好，中間的不要動作，減少多餘的request發送</p>
+<pre data-origin="example(of: &quot;switchToLatest&quot;) {
+
+  let publisher1 = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+  let publisher2 = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+  let publisher3 = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+  let publishers = PassthroughSubject&amp;lt;PassthroughSubject&amp;lt;Int, Never&amp;gt;, Never&amp;gt;()
+
+  publishers
+      .switchToLatest()
+      .sink(
+          receiveCompletion: { _ in print(&quot;Completed!&quot;) },
+          receiveValue: { print($0) }
+      )
+      .store(in: &amp;amp;subscriptions)
+
+  publishers.send(publisher1)
+  publisher1.send(1)
+  publisher1.send(2)
+
+  publishers.send(publisher2)
+  publisher1.send(3)
+  publisher2.send(4)
+  publisher2.send(5)
+
+  publishers.send(publisher3)
+  publisher2.send(6)
+  publisher3.send(7)
+  publisher3.send(8)
+  publisher3.send(9)
+
+  publisher3.send(completion: .finished)
+  publishers.send(completion: .finished)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"switchToLatest"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher1 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+  <span class="hljs-keyword">let</span> publisher2 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+  <span class="hljs-keyword">let</span> publisher3 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+  <span class="hljs-keyword">let</span> publishers = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;, <span class="hljs-type">Never</span>&gt;()
+
+  publishers
+      .switchToLatest()
+      .sink(
+          receiveCompletion: { <span class="hljs-number">_</span> <span class="hljs-keyword">in</span> <span class="hljs-built_in">print</span>(<span class="hljs-string">"Completed!"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  publishers.send(publisher1)
+  publisher1.send(<span class="hljs-number">1</span>)
+  publisher1.send(<span class="hljs-number">2</span>)
+
+  publishers.send(publisher2)
+  publisher1.send(<span class="hljs-number">3</span>)
+  publisher2.send(<span class="hljs-number">4</span>)
+  publisher2.send(<span class="hljs-number">5</span>)
+
+  publishers.send(publisher3)
+  publisher2.send(<span class="hljs-number">6</span>)
+  publisher3.send(<span class="hljs-number">7</span>)
+  publisher3.send(<span class="hljs-number">8</span>)
+  publisher3.send(<span class="hljs-number">9</span>)
+
+  publisher3.send(completion: .finished)
+  publishers.send(completion: .finished)
+}
+</pre>
+<pre data-origin="=== 範例: switchToLatest ===
+publisher1 - 1
+publisher1 - 2
+publisher2 - 4
+publisher2 - 5
+publisher3 - 7
+publisher3 - 8
+publisher3 - 9
+Completed!
+" class="bash hljs">=== 範例: switchToLatest ===
+publisher1 - <span class="hljs-number">1</span>
+publisher1 - <span class="hljs-number">2</span>
+publisher2 - <span class="hljs-number">4</span>
+publisher2 - <span class="hljs-number">5</span>
+publisher3 - <span class="hljs-number">7</span>
+publisher3 - <span class="hljs-number">8</span>
+publisher3 - <span class="hljs-number">9</span>
+Completed!
+</pre>
+</li><li><p>實際應用<br><img src="image/SwitchToLatest.png" alt=""></p>
+<pre data-origin="example(of: &quot;switchToLatest - Network Request&quot;) {
+
+  let url = URL(string: &quot;https://picsum.photos/128&quot;)!
+  let taps = PassthroughSubject&amp;lt;Void, Never&amp;gt;()
+
+  taps.map { _ in getImage() }
+      .switchToLatest()
+      .sink(receiveValue: { _ in })
+      .store(in: &amp;amp;subscriptions)
+
+  taps.send()                                                                            // 下載圖片動作
+  DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { print(Date()); taps.send() }
+  DispatchQueue.main.asyncAfter(deadline: .now() + 3.1) { print(Date()); taps.send() }
+  DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) { print(Date()); taps.send() }
+  DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) { print(Date()); taps.send() }
+  DispatchQueue.main.asyncAfter(deadline: .now() + 3.4) { print(Date()); taps.send() }   // 只會留這一個下載圖片動作
+
+  func getImage() -&amp;gt; AnyPublisher&amp;lt;UIImage?, Never&amp;gt; {
+
+      URLSession.shared
+          .dataTaskPublisher(for: url)
+          .map { data, _ in UIImage(data: data) }
+          .print(&quot;[image]&quot;)
+          .replaceError(with: nil)
+          .eraseToAnyPublisher()
+  }
+}
+" class="swift hljs">example(of: <span class="hljs-string">"switchToLatest - Network Request"</span>) {
+
+  <span class="hljs-keyword">let</span> url = <span class="hljs-type">URL</span>(string: <span class="hljs-string">"https://picsum.photos/128"</span>)!
+  <span class="hljs-keyword">let</span> taps = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Void</span>, <span class="hljs-type">Never</span>&gt;()
+
+  taps.<span class="hljs-built_in">map</span> { <span class="hljs-number">_</span> <span class="hljs-keyword">in</span> getImage() }
+      .switchToLatest()
+      .sink(receiveValue: { <span class="hljs-number">_</span> <span class="hljs-keyword">in</span> })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  taps.send()                                                                            <span class="hljs-comment">// 下載圖片動作</span>
+  <span class="hljs-type">DispatchQueue</span>.main.asyncAfter(deadline: .now() + <span class="hljs-number">3.0</span>) { <span class="hljs-built_in">print</span>(<span class="hljs-type">Date</span>()); taps.send() }
+  <span class="hljs-type">DispatchQueue</span>.main.asyncAfter(deadline: .now() + <span class="hljs-number">3.1</span>) { <span class="hljs-built_in">print</span>(<span class="hljs-type">Date</span>()); taps.send() }
+  <span class="hljs-type">DispatchQueue</span>.main.asyncAfter(deadline: .now() + <span class="hljs-number">3.2</span>) { <span class="hljs-built_in">print</span>(<span class="hljs-type">Date</span>()); taps.send() }
+  <span class="hljs-type">DispatchQueue</span>.main.asyncAfter(deadline: .now() + <span class="hljs-number">3.3</span>) { <span class="hljs-built_in">print</span>(<span class="hljs-type">Date</span>()); taps.send() }
+  <span class="hljs-type">DispatchQueue</span>.main.asyncAfter(deadline: .now() + <span class="hljs-number">3.4</span>) { <span class="hljs-built_in">print</span>(<span class="hljs-type">Date</span>()); taps.send() }   <span class="hljs-comment">// 只會留這一個下載圖片動作</span>
+
+  <span class="hljs-func"><span class="hljs-keyword">func</span> <span class="hljs-title">getImage</span><span class="hljs-params">()</span></span> -&gt; <span class="hljs-type">AnyPublisher</span>&lt;<span class="hljs-type">UIImage</span>?, <span class="hljs-type">Never</span>&gt; {
+
+      <span class="hljs-type">URLSession</span>.shared
+          .dataTaskPublisher(<span class="hljs-keyword">for</span>: url)
+          .<span class="hljs-built_in">map</span> { data, <span class="hljs-number">_</span> <span class="hljs-keyword">in</span> <span class="hljs-type">UIImage</span>(data: data) }
+          .<span class="hljs-built_in">print</span>(<span class="hljs-string">"[image]"</span>)
+          .replaceError(with: <span class="hljs-literal">nil</span>)
+          .eraseToAnyPublisher()
+  }
+}
+</pre>
+<pre data-origin="=== 範例: switchToLatest - Network Request ===
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+[image]: receive value: (Optional(&amp;lt;UIImage:0x600001eec480 anonymous {128, 128} renderingMode=automatic(original)&amp;gt;))
+[image]: receive finished
+2023-05-30 07:02:02 +0000
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+2023-05-30 07:02:02 +0000
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+2023-05-30 07:02:02 +0000
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+2023-05-30 07:02:02 +0000
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+2023-05-30 07:02:02 +0000
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+[image]: receive value: (Optional(&amp;lt;UIImage:0x600001eec5a0 anonymous {128, 128} renderingMode=automatic(original)&amp;gt;))
+[image]: receive finished
+" class="bash hljs">=== 範例: switchToLatest - Network Request ===
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+[image]: receive value: (Optional(&lt;UIImage:<span class="hljs-number">0</span>x600001eec480 anonymous {<span class="hljs-number">128</span>, <span class="hljs-number">128</span>} renderingMode=automatic(original)&gt;))
+[image]: receive finished
+<span class="hljs-number">2023</span>-<span class="hljs-number">05</span>-<span class="hljs-number">30</span> <span class="hljs-number">07</span>:<span class="hljs-number">02</span>:<span class="hljs-number">02</span> +<span class="hljs-number">0000</span>
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+<span class="hljs-number">2023</span>-<span class="hljs-number">05</span>-<span class="hljs-number">30</span> <span class="hljs-number">07</span>:<span class="hljs-number">02</span>:<span class="hljs-number">02</span> +<span class="hljs-number">0000</span>
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+<span class="hljs-number">2023</span>-<span class="hljs-number">05</span>-<span class="hljs-number">30</span> <span class="hljs-number">07</span>:<span class="hljs-number">02</span>:<span class="hljs-number">02</span> +<span class="hljs-number">0000</span>
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+<span class="hljs-number">2023</span>-<span class="hljs-number">05</span>-<span class="hljs-number">30</span> <span class="hljs-number">07</span>:<span class="hljs-number">02</span>:<span class="hljs-number">02</span> +<span class="hljs-number">0000</span>
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+<span class="hljs-number">2023</span>-<span class="hljs-number">05</span>-<span class="hljs-number">30</span> <span class="hljs-number">07</span>:<span class="hljs-number">02</span>:<span class="hljs-number">02</span> +<span class="hljs-number">0000</span>
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+[image]: receive value: (Optional(&lt;UIImage:<span class="hljs-number">0</span>x600001eec5a0 anonymous {<span class="hljs-number">128</span>, <span class="hljs-number">128</span>} renderingMode=automatic(original)&gt;))
+[image]: receive finished
+</pre>
+</li></ul><h3 id="[merge(with:)](https://ithelp.ithome.com.tw/articles/10221533)"><a name="[merge(with:)](https://ithelp.ithome.com.tw/articles/10221533)" href="#[merge(with:)](https://ithelp.ithome.com.tw/articles/10221533)"></a><a href="https://ithelp.ithome.com.tw/articles/10221533">merge(with:)</a></h3><ul>
+<li><p>把Publisher們合併在一起</p>
+<pre data-origin="example(of: &quot;merge(with:)&quot;) {
+
+  let publisher1 = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+  let publisher2 = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+
+  publisher1
+      .merge(with: publisher2)
+      .sink(
+          receiveCompletion: { _ in print(&quot;Completed&quot;) },
+          receiveValue: { print($0) }
+      )
+      .store(in: &amp;amp;subscriptions)
+
+  publisher1.send(1)
+  publisher1.send(2)
+
+  publisher2.send(3)
+
+  publisher1.send(4)
+
+  publisher2.send(5)
+
+  publisher1.send(completion: .finished)
+  publisher2.send(completion: .finished)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"merge(with:)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher1 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+  <span class="hljs-keyword">let</span> publisher2 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+
+  publisher1
+      .merge(with: publisher2)
+      .sink(
+          receiveCompletion: { <span class="hljs-number">_</span> <span class="hljs-keyword">in</span> <span class="hljs-built_in">print</span>(<span class="hljs-string">"Completed"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  publisher1.send(<span class="hljs-number">1</span>)
+  publisher1.send(<span class="hljs-number">2</span>)
+
+  publisher2.send(<span class="hljs-number">3</span>)
+
+  publisher1.send(<span class="hljs-number">4</span>)
+
+  publisher2.send(<span class="hljs-number">5</span>)
+
+  publisher1.send(completion: .finished)
+  publisher2.send(completion: .finished)
+}
+</pre>
+<pre data-origin="=== 範例: merge(with:) ===
+1
+2
+3
+4
+5
+Completed
+" class="bash hljs">=== 範例: merge(with:) ===
+<span class="hljs-number">1</span>
+<span class="hljs-number">2</span>
+<span class="hljs-number">3</span>
+<span class="hljs-number">4</span>
+<span class="hljs-number">5</span>
+Completed
+</pre>
+</li></ul><h3 id="[combinelatest()](https://ithelp.ithome.com.tw/articles/10221533)"><a name="[combinelatest()](https://ithelp.ithome.com.tw/articles/10221533)" href="#[combinelatest()](https://ithelp.ithome.com.tw/articles/10221533)"></a><a href="https://ithelp.ithome.com.tw/articles/10221533">combineLatest()</a></h3><ul>
+<li><p>合併最後的一個publisher</p>
+<pre data-origin="example(of: &quot;combineLatest&quot;) {
+
+  let publisher1 = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+  let publisher2 = PassthroughSubject&amp;lt;String, Never&amp;gt;()
+
+  publisher1
+      .combineLatest(publisher2)
+      .sink(
+          receiveCompletion: { _ in print(&quot;Completed&quot;) },
+          receiveValue: { print(&quot;(\($0), \($1))&quot;) }
+      )
+      .store(in: &amp;amp;subscriptions)
+
+  publisher1.send(1)
+  publisher2.send(&quot;a&quot;)
+
+  publisher1.send(2)
+  publisher2.send(&quot;b&quot;)
+
+  publisher1.send(3)
+  publisher2.send(&quot;c&quot;)
+
+  publisher1.send(completion: .finished)
+  publisher2.send(completion: .finished)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"combineLatest"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher1 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+  <span class="hljs-keyword">let</span> publisher2 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">String</span>, <span class="hljs-type">Never</span>&gt;()
+
+  publisher1
+      .combineLatest(publisher2)
+      .sink(
+          receiveCompletion: { <span class="hljs-number">_</span> <span class="hljs-keyword">in</span> <span class="hljs-built_in">print</span>(<span class="hljs-string">"Completed"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"(<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>, <span class="hljs-subst">\($<span class="hljs-number">1</span>)</span>)"</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  publisher1.send(<span class="hljs-number">1</span>)
+  publisher2.send(<span class="hljs-string">"a"</span>)
+
+  publisher1.send(<span class="hljs-number">2</span>)
+  publisher2.send(<span class="hljs-string">"b"</span>)
+
+  publisher1.send(<span class="hljs-number">3</span>)
+  publisher2.send(<span class="hljs-string">"c"</span>)
+
+  publisher1.send(completion: .finished)
+  publisher2.send(completion: .finished)
+}
+</pre>
+<pre data-origin="=== 範例: combineLatest ===
+(1, a)
+(2, a)
+(2, b)
+(3, b)
+(3, c)
+Completed
+" class="bash hljs">=== 範例: combineLatest ===
+(<span class="hljs-number">1</span>, a)
+(<span class="hljs-number">2</span>, a)
+(<span class="hljs-number">2</span>, b)
+(<span class="hljs-number">3</span>, b)
+(<span class="hljs-number">3</span>, c)
+Completed
+</pre>
+</li></ul><h3 id="[zip()](https://augmentedcode.io/2022/10/03/combine-publishers-merge-zip-and-combinelatest-on-ios/)"><a name="[zip()](https://augmentedcode.io/2022/10/03/combine-publishers-merge-zip-and-combinelatest-on-ios/)" href="#[zip()](https://augmentedcode.io/2022/10/03/combine-publishers-merge-zip-and-combinelatest-on-ios/)"></a><a href="https://augmentedcode.io/2022/10/03/combine-publishers-merge-zip-and-combinelatest-on-ios/">zip()</a></h3><ul>
+<li><p>這個跟combineLatest不太一樣，它是一對一合併</p>
+<pre data-origin="example(of: &quot;zip&quot;) {
+
+  let publisher1 = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+  let publisher2 = PassthroughSubject&amp;lt;String, Never&amp;gt;()
+
+  publisher1
+      .zip(publisher2)
+      .sink(
+          receiveCompletion: { _ in print(&quot;Completed&quot;) },
+          receiveValue: { print(&quot;(\($0) ,\($1))&quot;) }
+      )
+      .store(in: &amp;amp;subscriptions)
+
+  publisher1.send(1)
+  publisher1.send(2)
+  publisher2.send(&quot;a&quot;)
+  publisher2.send(&quot;b&quot;)
+  publisher1.send(3)
+  publisher2.send(&quot;c&quot;)
+  publisher2.send(&quot;d&quot;)
+  publisher1.send(4)
+  publisher2.send(&quot;e&quot;)
+
+  publisher1.send(completion: .finished)
+  publisher2.send(completion: .finished)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"zip"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher1 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+  <span class="hljs-keyword">let</span> publisher2 = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">String</span>, <span class="hljs-type">Never</span>&gt;()
+
+  publisher1
+      .<span class="hljs-built_in">zip</span>(publisher2)
+      .sink(
+          receiveCompletion: { <span class="hljs-number">_</span> <span class="hljs-keyword">in</span> <span class="hljs-built_in">print</span>(<span class="hljs-string">"Completed"</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"(<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span> ,<span class="hljs-subst">\($<span class="hljs-number">1</span>)</span>)"</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  publisher1.send(<span class="hljs-number">1</span>)
+  publisher1.send(<span class="hljs-number">2</span>)
+  publisher2.send(<span class="hljs-string">"a"</span>)
+  publisher2.send(<span class="hljs-string">"b"</span>)
+  publisher1.send(<span class="hljs-number">3</span>)
+  publisher2.send(<span class="hljs-string">"c"</span>)
+  publisher2.send(<span class="hljs-string">"d"</span>)
+  publisher1.send(<span class="hljs-number">4</span>)
+  publisher2.send(<span class="hljs-string">"e"</span>)
+
+  publisher1.send(completion: .finished)
+  publisher2.send(completion: .finished)
+}
+</pre>
+<pre data-origin="=== 範例: zip ===
+(1 ,a)
+(2 ,b)
+(3 ,c)
+(4 ,d)
+Completed
+" class="bash hljs">=== 範例: zip ===
+(<span class="hljs-number">1</span> ,a)
+(<span class="hljs-number">2</span> ,b)
+(<span class="hljs-number">3</span> ,c)
+(<span class="hljs-number">4</span> ,d)
+Completed
+</pre>
 </li></ul>
 
 

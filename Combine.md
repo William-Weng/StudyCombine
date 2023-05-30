@@ -951,3 +951,432 @@ example(of: "prefix(untilOutputFrom:)") {
 2
 完成: finished
 ```
+
+## Lesson.04 - 結合用的Operator
+### [prepend(Output...)](https://juejin.cn/post/7018447582229692452)
+- 在原本的publisher之前加入數值，可以應用在一些一定要出現的介紹詞之上…
+```swift
+example(of: "prepend(Output...)") {
+    
+    let publisher = ["新會員", "William"].publisher
+    
+    publisher
+        .prepend("歡迎來到『人生40才開始』", "別忘了繳入會費喲")   // 再在前面加上 ["歡迎來到『人生40才開始』", "別忘了繳入會費喲"]
+        .prepend("嗨!!!", "您好")                            // 先在前面加上 ["嗨!!!", "您好"]  => ["嗨!!!", "您好", "歡迎來到『人生40才開始』", "別忘了繳入會費喲"]
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: prepend(Output...) ===
+嗨!!!
+您好
+歡迎來到『人生40才開始』
+別忘了繳入會費喲
+新會員
+William
+```
+
+### [prepend(Sequence)]()
+- 遵循[Sequence Protocol](https://developer.apple.com/documentation/swift/sequence)的都可以使用
+- 也就是有順序關係的，像：[Array](https://developer.apple.com/documentation/swift/array) / [Set](https://developer.apple.com/documentation/swift/set) / [Stride](https://developer.apple.com/documentation/swift/stride(from:to:by:&#41;)
+```swift
+example(of: "prepend(Sequence)") {
+    
+    let publisher = [5, 6, 7].publisher
+    let array = [3, 4]                              // Array也可以
+    let set = Set(1...2)                            // Set也可以
+    let stride = stride(from: 6, to: 11, by: 2)     // Stride也可以
+    
+    publisher
+        .prepend(array)
+        .prepend(set)
+        .prepend(stride)
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: prepend(Sequence) ===
+6
+8
+10
+1
+2
+3
+4
+5
+6
+7
+```
+
+### [prepend(Publisher)](https://developer.apple.com/documentation/combine/publisher/prepend(_:%#41;-v9sb)
+- publisher當參數也可以
+```swift
+example(of: "prepend(Publisher)") {
+    
+    let publisher1 = [3, 4].publisher
+    let publisher2 = [1, 2].publisher
+    
+    publisher1
+        .prepend(publisher2)
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: prepend(Publisher) ===
+1
+2
+3
+4
+```
+- 這樣也行
+```swift
+example(of: "prepend(Publisher) #2") {
+    
+    let publisher1 = [3, 4].publisher
+    let publisher2 = PassthroughSubject<Int, Never>()
+    
+    publisher1
+        .prepend(publisher2)
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+    
+    publisher2.send(1)
+    publisher2.send(2)
+    publisher2.send(completion: .finished)
+}
+```
+```bash
+=== 範例: prepend(Publisher) #2 ===
+1
+2
+3
+4
+```
+
+### [append(Output...)](https://juejin.cn/post/7018447582229692452)
+- append正好跟prepend相反，它是加在後面的功能…
+```swift
+example(of: "append(Output...)") {
+
+    let publisher = ["您好", "我是William"].publisher
+
+    publisher
+        .append("-演出人員名單-", "-配樂清單-")
+        .append("~終~")
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: append(Output...) ===
+您好
+我是William
+-演出人員名單-
+-配樂清單-
+~終~
+```
+
+- 這樣也可以
+```swift
+example(of: "append(Output...) #2") {
+    
+    let publisher = PassthroughSubject<Int, Never>()
+    
+    publisher
+        .append(3, 4)
+        .append(5)
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+    
+    publisher.send(1)
+    publisher.send(2)
+    publisher.send(completion: .finished)
+}
+```
+```bash
+=== 範例: append(Output...) #2 ===
+1
+2
+3
+4
+5
+```
+
+### [append(Sequence)](https://juejin.cn/post/7018447582229692452)
+- 跟append(Sequence)相反，就不多做介紹了
+```swift
+example(of: "append(Sequence)") {
+    
+    let publisher = [1, 2, 3].publisher
+    
+    publisher
+        .append([4, 5])
+        .append(Set([6, 7]))
+        .append(stride(from: 8, to: 11, by: 2))
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: append(Sequence) ===
+1
+2
+3
+4
+5
+7
+6
+8
+10
+```
+
+### [append(Publisher)](https://juejin.cn/post/7018447582229692452)
+- 跟append(Publisher)相反，也不多做介紹了
+```swift
+example(of: "append(Publisher)") {
+    
+    let publisher1 = [1, 2].publisher
+    let publisher2 = [3, 4].publisher
+    
+    publisher1
+        .append(publisher2)
+        .sink(receiveValue: { print($0) })
+        .store(in: &subscriptions)
+}
+```
+```bash
+=== 範例: append(Publisher) ===
+1
+2
+3
+4
+```
+
+### [switchToLatest](https://zhuanlan.zhihu.com/p/345054834)
+- 切換到最後一個Publisher
+- 在應用上的話，就像及時搜尋單字框，會一直送request，但是我們只需要最後一次的單字就好，中間的不要動作，減少多餘的request發送
+```swift
+example(of: "switchToLatest") {
+    
+    let publisher1 = PassthroughSubject<Int, Never>()
+    let publisher2 = PassthroughSubject<Int, Never>()
+    let publisher3 = PassthroughSubject<Int, Never>()
+    let publishers = PassthroughSubject<PassthroughSubject<Int, Never>, Never>()
+    
+    publishers
+        .switchToLatest()
+        .sink(
+            receiveCompletion: { _ in print("Completed!") },
+            receiveValue: { print($0) }
+        )
+        .store(in: &subscriptions)
+    
+    publishers.send(publisher1)
+    publisher1.send(1)
+    publisher1.send(2)
+    
+    publishers.send(publisher2)
+    publisher1.send(3)
+    publisher2.send(4)
+    publisher2.send(5)
+    
+    publishers.send(publisher3)
+    publisher2.send(6)
+    publisher3.send(7)
+    publisher3.send(8)
+    publisher3.send(9)
+    
+    publisher3.send(completion: .finished)
+    publishers.send(completion: .finished)
+}
+```
+```bash
+=== 範例: switchToLatest ===
+publisher1 - 1
+publisher1 - 2
+publisher2 - 4
+publisher2 - 5
+publisher3 - 7
+publisher3 - 8
+publisher3 - 9
+Completed!
+```
+- 實際應用
+![](image/SwitchToLatest.png)
+```swift
+example(of: "switchToLatest - Network Request") {
+    
+    let url = URL(string: "https://picsum.photos/128")!
+    let taps = PassthroughSubject<Void, Never>()
+    
+    taps.map { _ in getImage() }
+        .switchToLatest()
+        .sink(receiveValue: { _ in })
+        .store(in: &subscriptions)
+    
+    taps.send()                                                                            // 下載圖片動作
+    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { print(Date()); taps.send() }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 3.1) { print(Date()); taps.send() }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) { print(Date()); taps.send() }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) { print(Date()); taps.send() }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 3.4) { print(Date()); taps.send() }   // 只會留這一個下載圖片動作
+
+    func getImage() -> AnyPublisher<UIImage?, Never> {
+        
+        URLSession.shared
+            .dataTaskPublisher(for: url)
+            .map { data, _ in UIImage(data: data) }
+            .print("[image]")
+            .replaceError(with: nil)
+            .eraseToAnyPublisher()
+    }
+}
+```
+```bash
+=== 範例: switchToLatest - Network Request ===
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+[image]: receive value: (Optional(<UIImage:0x600001eec480 anonymous {128, 128} renderingMode=automatic(original)>))
+[image]: receive finished
+2023-05-30 07:02:02 +0000
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+2023-05-30 07:02:02 +0000
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+2023-05-30 07:02:02 +0000
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+2023-05-30 07:02:02 +0000
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+2023-05-30 07:02:02 +0000
+[image]: receive cancel
+[image]: receive subscription: (DataTaskPublisher)
+[image]: request unlimited
+[image]: receive value: (Optional(<UIImage:0x600001eec5a0 anonymous {128, 128} renderingMode=automatic(original)>))
+[image]: receive finished
+```
+
+### [merge(with:)](https://ithelp.ithome.com.tw/articles/10221533)
+- 把Publisher們合併在一起
+```swift
+example(of: "merge(with:)") {
+    
+    let publisher1 = PassthroughSubject<Int, Never>()
+    let publisher2 = PassthroughSubject<Int, Never>()
+    
+    publisher1
+        .merge(with: publisher2)
+        .sink(
+            receiveCompletion: { _ in print("Completed") },
+            receiveValue: { print($0) }
+        )
+        .store(in: &subscriptions)
+    
+    publisher1.send(1)
+    publisher1.send(2)
+    
+    publisher2.send(3)
+    
+    publisher1.send(4)
+    
+    publisher2.send(5)
+    
+    publisher1.send(completion: .finished)
+    publisher2.send(completion: .finished)
+}
+```
+```bash
+=== 範例: merge(with:) ===
+1
+2
+3
+4
+5
+Completed
+```
+
+### [combineLatest()](https://ithelp.ithome.com.tw/articles/10221533)
+- 合併最後的一個publisher
+```swift
+example(of: "combineLatest") {
+    
+    let publisher1 = PassthroughSubject<Int, Never>()
+    let publisher2 = PassthroughSubject<String, Never>()
+    
+    publisher1
+        .combineLatest(publisher2)
+        .sink(
+            receiveCompletion: { _ in print("Completed") },
+            receiveValue: { print("(\($0), \($1))") }
+        )
+        .store(in: &subscriptions)
+    
+    publisher1.send(1)
+    publisher2.send("a")
+
+    publisher1.send(2)
+    publisher2.send("b")
+    
+    publisher1.send(3)
+    publisher2.send("c")
+    
+    publisher1.send(completion: .finished)
+    publisher2.send(completion: .finished)
+}
+```
+```bash
+=== 範例: combineLatest ===
+(1, a)
+(2, a)
+(2, b)
+(3, b)
+(3, c)
+Completed
+```
+
+### [zip()](https://augmentedcode.io/2022/10/03/combine-publishers-merge-zip-and-combinelatest-on-ios/)
+- 這個跟combineLatest不太一樣，它是一對一合併
+```swift
+example(of: "zip") {
+    
+    let publisher1 = PassthroughSubject<Int, Never>()
+    let publisher2 = PassthroughSubject<String, Never>()
+    
+    publisher1
+        .zip(publisher2)
+        .sink(
+            receiveCompletion: { _ in print("Completed") },
+            receiveValue: { print("(\($0) ,\($1))") }
+        )
+        .store(in: &subscriptions)
+    
+    publisher1.send(1)
+    publisher1.send(2)
+    publisher2.send("a")
+    publisher2.send("b")
+    publisher1.send(3)
+    publisher2.send("c")
+    publisher2.send("d")
+    publisher1.send(4)
+    publisher2.send("e")
+    
+    publisher1.send(completion: .finished)
+    publisher2.send(completion: .finished)
+}
+```
+```bash
+=== 範例: zip ===
+(1 ,a)
+(2 ,b)
+(3 ,c)
+(4 ,d)
+Completed
+```
