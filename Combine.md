@@ -1380,3 +1380,363 @@ example(of: "zip") {
 (4 ,d)
 Completed
 ```
+
+## Lesson.05 - 時間操作運算子
+### [delay(for:tolerance:scheduler:options)](https://juejin.cn/post/7020305767324450823)
+- 可以延遲來自發佈者的值，以便您看到它們比它們實際發生的時間晚…
+
+```swift
+let delaySeccond = 2
+let timerSeccond = 1
+
+var subscriptions = Set<AnyCancellable>()
+
+let timerPublisher = Timer
+  .publish(every: Double(timerSeccond) , on: .main, in: .common)
+  .autoconnect()
+
+timerPublisher
+    .handleEvents(receiveOutput: { date in print ("每\(timerSeccond)秒發送訊息\t\t\(date)") })
+    .delay(for: .seconds(delaySeccond), scheduler: DispatchQueue.main)
+    .sink { value in print("收到前\(delaySeccond)秒的訊息\t\(value)") }
+    .store(in: &subscriptions)
+```
+```bash
+每1秒發送訊息		2023-06-14 05:35:30 +0000
+每1秒發送訊息		2023-06-14 05:35:31 +0000
+每1秒發送訊息		2023-06-14 05:35:32 +0000
+收到前2秒的訊息	2023-06-14 05:35:30 +0000
+每1秒發送訊息		2023-06-14 05:35:33 +0000
+收到前2秒的訊息	2023-06-14 05:35:31 +0000
+每1秒發送訊息		2023-06-14 05:35:34 +0000
+收到前2秒的訊息	2023-06-14 05:35:32 +0000
+```
+
+- 圖文版加強版
+![](./image/Delay.png)
+
+```swift
+let valuesPerSecond = 1.0
+let delayInSeconds = 1.5
+
+let sourcePublisher = PassthroughSubject<Date, Never>()
+let delayedPublisher = sourcePublisher.delay(for: .seconds(delayInSeconds), scheduler: DispatchQueue.main)
+
+let subscription = Timer
+    .publish(every: 1.0 / valuesPerSecond, on: .main, in: .common)
+    .autoconnect()
+    .subscribe(sourcePublisher)
+
+let sourceTimeline = TimelineView(title: "發射數值 - \(valuesPerSecond) 個/秒")
+let delayedTimeline = TimelineView(title: "發射數值 - 延遲\(delayInSeconds)秒")
+
+let view = VStack(spacing: 50) {
+    sourceTimeline
+    delayedTimeline
+}
+
+sourcePublisher.displayEvents(in: sourceTimeline)
+delayedPublisher.displayEvents(in: delayedTimeline)
+
+PlaygroundPage.current.liveView = UIHostingController(rootView: view.frame(width: 800, height: 600))
+```
+
+### [collect()](https://jllnmercier.medium.com/combine-collect-operator-cf818f119806)
+- 定時收集數值…
+
+```swift
+let subscriber = Timer.publish(every: 0.5, on: .main, in: .default) // 每0.5秒發一次
+    .autoconnect()
+    .collect(.byTime(RunLoop.main, .seconds(3)))                    // 收集3秒內的數值 => 3 / 0.5 = 6個數值
+    .sink { print("\($0)", terminator: "\n\n") }
+```
+```bash
+[2023-06-14 05:44:25 +0000, 2023-06-14 05:44:25 +0000, 2023-06-14 05:44:26 +0000, 2023-06-14 05:44:26 +0000, 2023-06-14 05:44:27 +0000]
+
+[2023-06-14 05:44:27 +0000, 2023-06-14 05:44:28 +0000, 2023-06-14 05:44:28 +0000, 2023-06-14 05:44:29 +0000, 2023-06-14 05:44:29 +0000, 2023-06-14 05:44:30 +0000]
+
+[2023-06-14 05:44:30 +0000, 2023-06-14 05:44:31 +0000, 2023-06-14 05:44:31 +0000, 2023-06-14 05:44:32 +0000, 2023-06-14 05:44:32 +0000, 2023-06-14 05:44:33 +0000]
+```
+
+- 圖文版加強版
+![](./image/Collect.png)
+
+```swift
+let valuesPerSecond = 1.0
+let collectTimeStride = 4
+let collectMaxCount = 2
+
+let sourcePublisher = PassthroughSubject<Date, Never>()
+
+let collectedPublisher = sourcePublisher
+  .collect(.byTime(DispatchQueue.main, .seconds(collectTimeStride)))
+  .flatMap { dates in dates.publisher }
+
+let collectedPublisher2 = sourcePublisher
+  .collect(.byTimeOrCount(DispatchQueue.main, .seconds(collectTimeStride), collectMaxCount))
+  .flatMap { dates in dates.publisher }
+
+let subscription = Timer
+  .publish(every: 1.0 / valuesPerSecond, on: .main, in: .common)
+  .autoconnect()
+  .subscribe(sourcePublisher)
+
+let sourceTimeline = TimelineView(title: "Emitted values:")
+let collectedTimeline = TimelineView(title: "Collected values (every \(collectTimeStride)s):")
+let collectedTimeline2 = TimelineView(title: "Collected values (at most \(collectMaxCount) every \(collectTimeStride)s):")
+
+let view = VStack(spacing: 40) {
+  sourceTimeline
+  collectedTimeline
+  collectedTimeline2
+}
+
+PlaygroundPage.current.liveView = UIHostingController(rootView: view.frame(width: 600, height: 600))
+
+sourcePublisher.displayEvents(in: sourceTimeline)
+collectedPublisher.displayEvents(in: collectedTimeline)
+collectedPublisher2.displayEvents(in: collectedTimeline2)
+```
+
+### [debounce()](https://ithelp.ithome.com.tw/articles/10222968)
+- 取時間內的最後一個數值
+- 比如在短時間內Button連點的問題，只處理最後一次點選事件
+- 也就是除了Delay，還會過濾
+
+```swift
+let subject = PassthroughSubject<Int, Never>()
+
+let bounces:[(Int, TimeInterval)] = [
+    (1, 0.1),   // 0.1秒 => 1
+    (2, 0.2),   // 0.2秒 => 2
+    (5, 1.1),   // 1.1秒 => 5
+    (6, 1.2)    // 1.2秒 => 6
+]
+
+var cancellable = subject
+    .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+    .sink { index in print ("Received index \(index)") }
+
+for bounce in bounces {
+    DispatchQueue.main.asyncAfter(deadline: .now() + bounce.1) {
+        subject.send(bounce.0)
+    }
+}
+```
+
+- 圖文版加強版
+![](./image/Debounce.png)
+
+```swift
+let subject = PassthroughSubject<String, Never>()
+
+let debounced = subject
+  .debounce(for: .seconds(1.0), scheduler: DispatchQueue.main)
+  .share()
+
+let subjectTimeline = TimelineView(title: "Emitted values")
+let debouncedTimeline = TimelineView(title: "Debounced values")
+
+let view = VStack(spacing: 100) {
+  subjectTimeline
+  debouncedTimeline
+}
+
+subject.displayEvents(in: subjectTimeline)
+debounced.displayEvents(in: debouncedTimeline)
+
+let subscription1 = subject
+  .sink { string in
+    print("+\(deltaTime)s: Subject emitted: \(string)")
+  }
+
+let subscription2 = debounced
+  .sink { string in
+    print("+\(deltaTime)s: Debounced emitted: \(string)")
+  }
+
+subject.feed(with: typingHelloWorld)
+
+PlaygroundPage.current.liveView = UIHostingController(rootView: view.frame(width: 600, height: 600))
+```
+
+### [throttle(for:scheduler:latest:)](https://zhuanlan.zhihu.com/p/343631974)
+- 限制數量用
+- 如果在2秒內瘋狂點選按鈕，時間窗口的時長為0.5秒，那麼throttle可以傳送4次資料
+- 而debounce不會傳送資料，只有當我停止點選0.5秒後，才會傳送一次資料。
+
+```swift
+let cancellable = Timer.publish(every: 3.0, on: .main, in: .default)    // 每3秒發送一次
+    .autoconnect()
+    .print("\(Date().description)")
+    .throttle(for: 10.0, scheduler: RunLoop.main, latest: true)         // 每10秒內取最後一個
+    .sink(
+        receiveCompletion: { print ("Completion: \($0).") },
+        receiveValue: { print("Received Timestamp \($0).") }
+    )
+```
+```bash
+2023-06-14 06:42:34 +0000: request unlimited
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:42:37 +0000)
+Received Timestamp 2023-06-14 06:42:37 +0000.
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:42:40 +0000)
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:42:43 +0000)
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:42:46 +0000)
+Received Timestamp 2023-06-14 06:42:46 +0000.
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:42:49 +0000)
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:42:52 +0000)
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:42:55 +0000)
+Received Timestamp 2023-06-14 06:42:55 +0000.
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:42:58 +0000)
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:43:01 +0000)
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:43:04 +0000)
+2023-06-14 06:42:34 +0000: receive value: (2023-06-14 06:43:07 +0000)
+Received Timestamp 2023-06-14 06:43:07 +0000.
+```
+
+- 圖文版加強版
+![](./image/Throttle.png)
+
+```swift
+let throttleDelay = 1.0
+let subject = PassthroughSubject<String, Never>()
+
+let throttled = subject
+    .throttle(for: .seconds(throttleDelay), scheduler: DispatchQueue.main, latest: true)
+    .share()
+
+let subjectTimeline = TimelineView(title: "Emitted values")
+let throttledTimeline = TimelineView(title: "Throttled values")
+
+let view = VStack(spacing: 100) {
+    subjectTimeline
+    throttledTimeline
+}
+
+subject.displayEvents(in: subjectTimeline)
+throttled.displayEvents(in: throttledTimeline)
+
+let subscription1 = subject
+    .sink { string in
+        print("+\(deltaTime)s: Subject emitted: \(string)")
+    }
+
+let subscription2 = throttled
+    .sink { string in
+        print("+\(deltaTime)s: Throttled emitted: \(string)")
+    }
+
+subject.feed(with: typingHelloWorld)
+
+PlaygroundPage.current.liveView = UIHostingController(rootView: view.frame(width: 400, height: 600))
+```
+
+### [timeout(_:scheduler:options:customError:)](https://derrickho328.medium.com/combine-timeout-a5e89b434c72)
+- 用於設定pipline的超時時間
+
+```swift
+let WaitTime : Int = 2
+let TimeoutTime : Int = 5
+
+let subject = PassthroughSubject<String, Never>()
+let cancellable = subject
+    .timeout(.seconds(TimeoutTime), scheduler: DispatchQueue.main, options: nil, customError:nil)
+    .sink(
+        receiveCompletion: { print ("\(Date()) - \(TimeoutTime)秒後完成: \($0)") },
+        receiveValue: { print ("\(Date()) - 數值: \($0)") }
+    )
+
+print("\(Date()) - 開始")
+
+DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(WaitTime), execute: { subject.send("\(Date()) - 等\(WaitTime)秒後發出") } )
+```
+```bash
+2023-06-14 06:55:46 +0000 - 開始
+2023-06-14 06:55:49 +0000 - 數值: 2023-06-14 06:55:49 +0000 - 等2秒後發出
+2023-06-14 06:55:54 +0000 - 完成: finished
+```
+
+- 圖文版加強版
+![](./image/Timeout.png)
+
+```swift
+enum TimeoutError: Error {
+    case timedOut
+}
+
+let subject = PassthroughSubject<Void, TimeoutError>()
+
+let timedOutSubject = subject.timeout(.seconds(5), scheduler: DispatchQueue.main, customError: { .timedOut })
+let timeline = TimelineView(title: "Button taps")
+
+let view = VStack(spacing: 100) {
+    
+    Button(action: { subject.send() }) {
+        Text("Press me within 5 seconds")
+    }
+    timeline
+}
+
+timedOutSubject.displayEvents(in: timeline)
+
+PlaygroundPage.current.liveView = UIHostingController(rootView: view.frame(width: 600, height: 600))
+```
+
+### [measureInterval(using:options:)](https://medium.com/swlh/operators-b8405cb9e265)
+- 測量並行出從上游發佈者接收到的事件之間的時間間隔…
+- 可以看出時間間隔大約就是一秒
+
+```swift
+let cancellable = Timer.publish(every: 1, on: .main, in: .default)
+    .autoconnect()
+    .measureInterval(using: RunLoop.main)
+    .sink { print("\($0)", terminator: "\n") }
+```
+```bash
+Stride(magnitude: 1.0004009008407593)
+Stride(magnitude: 1.0000990629196167)
+Stride(magnitude: 1.0000349283218384)
+Stride(magnitude: 1.0007370710372925)
+Stride(magnitude: 1.0000169277191162)
+Stride(magnitude: 0.9993090629577637)
+Stride(magnitude: 0.9999560117721558)
+Stride(magnitude: 1.0000669956207275)
+Stride(magnitude: 0.9999699592590332)
+```
+
+- 圖文版加強版
+![](./image/MeasureInterval.png)
+
+```swift
+let subject = PassthroughSubject<String, Never>()
+
+let measureSubject = subject.measureInterval(using: DispatchQueue.main)
+let measureSubject2 = subject.measureInterval(using: RunLoop.main)
+
+let subjectTimeline = TimelineView(title: "Emitted values")
+let measureTimeline = TimelineView(title: "Measured values")
+
+let view = VStack(spacing: 100) {
+    subjectTimeline
+    measureTimeline
+}
+
+subject.displayEvents(in: subjectTimeline)
+measureSubject.displayEvents(in: measureTimeline)
+
+let subscription1 = subject.sink {
+    print("+\(deltaTime)s: Subject emitted: \($0)")
+}
+
+let subscription2 = measureSubject.sink {
+    print("+\(deltaTime)s: Measure emitted: \(Double($0.magnitude) / 1_000_000_000.0)")
+}
+
+let subscription3 = measureSubject2.sink {
+    print("+\(deltaTime)s: Measure2 emitted: \($0)")
+}
+
+subject.feed(with: typingHelloWorld)
+
+PlaygroundPage.current.liveView = UIHostingController(rootView: view.frame(width: 375, height: 600))
+```

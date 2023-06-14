@@ -2216,7 +2216,291 @@ Completed
 (<span class="hljs-number">4</span> ,d)
 Completed
 </pre>
-</li></ul>
+</li></ul><h2 id="lesson.05---時間操作運算子"><a name="lesson.05---時間操作運算子" href="#lesson.05---時間操作運算子"></a>Lesson.05 - 時間操作運算子</h2><h3 id="[delay(for:tolerance:scheduler:options)](https://juejin.cn/post/7020305767324450823)"><a name="[delay(for:tolerance:scheduler:options)](https://juejin.cn/post/7020305767324450823)" href="#[delay(for:tolerance:scheduler:options)](https://juejin.cn/post/7020305767324450823)"></a><a href="https://juejin.cn/post/7020305767324450823">delay(for:tolerance:scheduler:options)</a></h3><ul>
+<li>可以延遲來自發佈者的值，以便您看到它們比它們實際發生的時間晚…</li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> delaySeccond = <span class="hljs-number">2</span>
+<span class="hljs-keyword">let</span> timerSeccond = <span class="hljs-number">1</span>
+
+<span class="hljs-keyword">var</span> subscriptions = <span class="hljs-type">Set</span>&lt;<span class="hljs-type">AnyCancellable</span>&gt;()
+
+<span class="hljs-keyword">let</span> timerPublisher = <span class="hljs-type">Timer</span>
+  .publish(every: <span class="hljs-type">Double</span>(timerSeccond) , on: .main, <span class="hljs-keyword">in</span>: .common)
+  .autoconnect()
+
+timerPublisher
+    .handleEvents(receiveOutput: { date <span class="hljs-keyword">in</span> <span class="hljs-built_in">print</span> (<span class="hljs-string">"每<span class="hljs-subst">\(timerSeccond)</span>秒發送訊息\t\t<span class="hljs-subst">\(date)</span>"</span>) })
+    .delay(<span class="hljs-keyword">for</span>: .seconds(delaySeccond), scheduler: <span class="hljs-type">DispatchQueue</span>.main)
+    .sink { value <span class="hljs-keyword">in</span> <span class="hljs-built_in">print</span>(<span class="hljs-string">"收到前<span class="hljs-subst">\(delaySeccond)</span>秒的訊息\t<span class="hljs-subst">\(value)</span>"</span>) }
+    .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+</pre><pre class="bash hljs">每<span class="hljs-number">1</span>秒發送訊息        <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">35</span>:<span class="hljs-number">30</span> +<span class="hljs-number">0000</span>
+每<span class="hljs-number">1</span>秒發送訊息        <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">35</span>:<span class="hljs-number">31</span> +<span class="hljs-number">0000</span>
+每<span class="hljs-number">1</span>秒發送訊息        <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">35</span>:<span class="hljs-number">32</span> +<span class="hljs-number">0000</span>
+收到前<span class="hljs-number">2</span>秒的訊息    <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">35</span>:<span class="hljs-number">30</span> +<span class="hljs-number">0000</span>
+每<span class="hljs-number">1</span>秒發送訊息        <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">35</span>:<span class="hljs-number">33</span> +<span class="hljs-number">0000</span>
+收到前<span class="hljs-number">2</span>秒的訊息    <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">35</span>:<span class="hljs-number">31</span> +<span class="hljs-number">0000</span>
+每<span class="hljs-number">1</span>秒發送訊息        <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">35</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>
+收到前<span class="hljs-number">2</span>秒的訊息    <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">35</span>:<span class="hljs-number">32</span> +<span class="hljs-number">0000</span>
+</pre><ul>
+<li>圖文版加強版<br><img src="image/Delay.png" alt=""></li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> valuesPerSecond = <span class="hljs-number">1.0</span>
+<span class="hljs-keyword">let</span> delayInSeconds = <span class="hljs-number">1.5</span>
+
+<span class="hljs-keyword">let</span> sourcePublisher = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Date</span>, <span class="hljs-type">Never</span>&gt;()
+<span class="hljs-keyword">let</span> delayedPublisher = sourcePublisher.delay(<span class="hljs-keyword">for</span>: .seconds(delayInSeconds), scheduler: <span class="hljs-type">DispatchQueue</span>.main)
+
+<span class="hljs-keyword">let</span> subscription = <span class="hljs-type">Timer</span>
+    .publish(every: <span class="hljs-number">1.0</span> / valuesPerSecond, on: .main, <span class="hljs-keyword">in</span>: .common)
+    .autoconnect()
+    .subscribe(sourcePublisher)
+
+<span class="hljs-keyword">let</span> sourceTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"發射數值 - <span class="hljs-subst">\(valuesPerSecond)</span> 個/秒"</span>)
+<span class="hljs-keyword">let</span> delayedTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"發射數值 - 延遲<span class="hljs-subst">\(delayInSeconds)</span>秒"</span>)
+
+<span class="hljs-keyword">let</span> view = <span class="hljs-type">VStack</span>(spacing: <span class="hljs-number">50</span>) {
+    sourceTimeline
+    delayedTimeline
+}
+
+sourcePublisher.displayEvents(<span class="hljs-keyword">in</span>: sourceTimeline)
+delayedPublisher.displayEvents(<span class="hljs-keyword">in</span>: delayedTimeline)
+
+<span class="hljs-type">PlaygroundPage</span>.current.liveView = <span class="hljs-type">UIHostingController</span>(rootView: view.frame(width: <span class="hljs-number">800</span>, height: <span class="hljs-number">600</span>))
+</pre><h3 id="[collect()](https://jllnmercier.medium.com/combine-collect-operator-cf818f119806)"><a name="[collect()](https://jllnmercier.medium.com/combine-collect-operator-cf818f119806)" href="#[collect()](https://jllnmercier.medium.com/combine-collect-operator-cf818f119806)"></a><a href="https://jllnmercier.medium.com/combine-collect-operator-cf818f119806">collect()</a></h3><ul>
+<li>定時收集數值…</li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> subscriber = <span class="hljs-type">Timer</span>.publish(every: <span class="hljs-number">0.5</span>, on: .main, <span class="hljs-keyword">in</span>: .<span class="hljs-keyword">default</span>) <span class="hljs-comment">// 每0.5秒發一次</span>
+    .autoconnect()
+    .collect(.byTime(<span class="hljs-type">RunLoop</span>.main, .seconds(<span class="hljs-number">3</span>)))                    <span class="hljs-comment">// 收集3秒內的數值 =&gt; 3 / 0.5 = 6個數值</span>
+    .sink { <span class="hljs-built_in">print</span>(<span class="hljs-string">"<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>, terminator: <span class="hljs-string">"\n\n"</span>) }
+</pre><pre class="bash hljs">[<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">25</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">25</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">26</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">26</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">27</span> +<span class="hljs-number">0000</span>]
+
+[<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">27</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">28</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">28</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">29</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">29</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">30</span> +<span class="hljs-number">0000</span>]
+
+[<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">30</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">31</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">31</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">32</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">32</span> +<span class="hljs-number">0000</span>, <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">05</span>:<span class="hljs-number">44</span>:<span class="hljs-number">33</span> +<span class="hljs-number">0000</span>]
+</pre><ul>
+<li>圖文版加強版<br><img src="image/Collect.png" alt=""></li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> valuesPerSecond = <span class="hljs-number">1.0</span>
+<span class="hljs-keyword">let</span> collectTimeStride = <span class="hljs-number">4</span>
+<span class="hljs-keyword">let</span> collectMaxCount = <span class="hljs-number">2</span>
+
+<span class="hljs-keyword">let</span> sourcePublisher = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Date</span>, <span class="hljs-type">Never</span>&gt;()
+
+<span class="hljs-keyword">let</span> collectedPublisher = sourcePublisher
+  .collect(.byTime(<span class="hljs-type">DispatchQueue</span>.main, .seconds(collectTimeStride)))
+  .flatMap { dates <span class="hljs-keyword">in</span> dates.publisher }
+
+<span class="hljs-keyword">let</span> collectedPublisher2 = sourcePublisher
+  .collect(.byTimeOrCount(<span class="hljs-type">DispatchQueue</span>.main, .seconds(collectTimeStride), collectMaxCount))
+  .flatMap { dates <span class="hljs-keyword">in</span> dates.publisher }
+
+<span class="hljs-keyword">let</span> subscription = <span class="hljs-type">Timer</span>
+  .publish(every: <span class="hljs-number">1.0</span> / valuesPerSecond, on: .main, <span class="hljs-keyword">in</span>: .common)
+  .autoconnect()
+  .subscribe(sourcePublisher)
+
+<span class="hljs-keyword">let</span> sourceTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Emitted values:"</span>)
+<span class="hljs-keyword">let</span> collectedTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Collected values (every <span class="hljs-subst">\(collectTimeStride)</span>s):"</span>)
+<span class="hljs-keyword">let</span> collectedTimeline2 = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Collected values (at most <span class="hljs-subst">\(collectMaxCount)</span> every <span class="hljs-subst">\(collectTimeStride)</span>s):"</span>)
+
+<span class="hljs-keyword">let</span> view = <span class="hljs-type">VStack</span>(spacing: <span class="hljs-number">40</span>) {
+  sourceTimeline
+  collectedTimeline
+  collectedTimeline2
+}
+
+<span class="hljs-type">PlaygroundPage</span>.current.liveView = <span class="hljs-type">UIHostingController</span>(rootView: view.frame(width: <span class="hljs-number">600</span>, height: <span class="hljs-number">600</span>))
+
+sourcePublisher.displayEvents(<span class="hljs-keyword">in</span>: sourceTimeline)
+collectedPublisher.displayEvents(<span class="hljs-keyword">in</span>: collectedTimeline)
+collectedPublisher2.displayEvents(<span class="hljs-keyword">in</span>: collectedTimeline2)
+</pre><h3 id="[debounce()](https://ithelp.ithome.com.tw/articles/10222968)"><a name="[debounce()](https://ithelp.ithome.com.tw/articles/10222968)" href="#[debounce()](https://ithelp.ithome.com.tw/articles/10222968)"></a><a href="https://ithelp.ithome.com.tw/articles/10222968">debounce()</a></h3><ul>
+<li>取時間內的最後一個數值</li><li>比如在短時間內Button連點的問題，只處理最後一次點選事件</li><li>也就是除了Delay，還會過濾</li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> subject = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+
+<span class="hljs-keyword">let</span> bounces:[(<span class="hljs-type">Int</span>, <span class="hljs-type">TimeInterval</span>)] = [
+    (<span class="hljs-number">1</span>, <span class="hljs-number">0.1</span>),   <span class="hljs-comment">// 0.1秒 =&gt; 1</span>
+    (<span class="hljs-number">2</span>, <span class="hljs-number">0.2</span>),   <span class="hljs-comment">// 0.2秒 =&gt; 2</span>
+    (<span class="hljs-number">5</span>, <span class="hljs-number">1.1</span>),   <span class="hljs-comment">// 1.1秒 =&gt; 5</span>
+    (<span class="hljs-number">6</span>, <span class="hljs-number">1.2</span>)    <span class="hljs-comment">// 1.2秒 =&gt; 6</span>
+]
+
+<span class="hljs-keyword">var</span> cancellable = subject
+    .debounce(<span class="hljs-keyword">for</span>: .seconds(<span class="hljs-number">0.5</span>), scheduler: <span class="hljs-type">RunLoop</span>.main)
+    .sink { index <span class="hljs-keyword">in</span> <span class="hljs-built_in">print</span> (<span class="hljs-string">"Received index <span class="hljs-subst">\(index)</span>"</span>) }
+
+<span class="hljs-keyword">for</span> bounce <span class="hljs-keyword">in</span> bounces {
+    <span class="hljs-type">DispatchQueue</span>.main.asyncAfter(deadline: .now() + bounce.<span class="hljs-number">1</span>) {
+        subject.send(bounce.<span class="hljs-number">0</span>)
+    }
+}
+</pre><ul>
+<li>圖文版加強版<br><img src="image/Debounce.png" alt=""></li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> subject = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">String</span>, <span class="hljs-type">Never</span>&gt;()
+
+<span class="hljs-keyword">let</span> debounced = subject
+  .debounce(<span class="hljs-keyword">for</span>: .seconds(<span class="hljs-number">1.0</span>), scheduler: <span class="hljs-type">DispatchQueue</span>.main)
+  .share()
+
+<span class="hljs-keyword">let</span> subjectTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Emitted values"</span>)
+<span class="hljs-keyword">let</span> debouncedTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Debounced values"</span>)
+
+<span class="hljs-keyword">let</span> view = <span class="hljs-type">VStack</span>(spacing: <span class="hljs-number">100</span>) {
+  subjectTimeline
+  debouncedTimeline
+}
+
+subject.displayEvents(<span class="hljs-keyword">in</span>: subjectTimeline)
+debounced.displayEvents(<span class="hljs-keyword">in</span>: debouncedTimeline)
+
+<span class="hljs-keyword">let</span> subscription1 = subject
+  .sink { string <span class="hljs-keyword">in</span>
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"+<span class="hljs-subst">\(deltaTime)</span>s: Subject emitted: <span class="hljs-subst">\(string)</span>"</span>)
+  }
+
+<span class="hljs-keyword">let</span> subscription2 = debounced
+  .sink { string <span class="hljs-keyword">in</span>
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"+<span class="hljs-subst">\(deltaTime)</span>s: Debounced emitted: <span class="hljs-subst">\(string)</span>"</span>)
+  }
+
+subject.feed(with: typingHelloWorld)
+
+<span class="hljs-type">PlaygroundPage</span>.current.liveView = <span class="hljs-type">UIHostingController</span>(rootView: view.frame(width: <span class="hljs-number">600</span>, height: <span class="hljs-number">600</span>))
+</pre><h3 id="[throttle(for:scheduler:latest:)](https://zhuanlan.zhihu.com/p/343631974)"><a name="[throttle(for:scheduler:latest:)](https://zhuanlan.zhihu.com/p/343631974)" href="#[throttle(for:scheduler:latest:)](https://zhuanlan.zhihu.com/p/343631974)"></a><a href="https://zhuanlan.zhihu.com/p/343631974">throttle(for:scheduler:latest:)</a></h3><ul>
+<li>限制數量用</li><li>如果在2秒內瘋狂點選按鈕，時間窗口的時長為0.5秒，那麼throttle可以傳送4次資料</li><li>而debounce不會傳送資料，只有當我停止點選0.5秒後，才會傳送一次資料。</li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> cancellable = <span class="hljs-type">Timer</span>.publish(every: <span class="hljs-number">3.0</span>, on: .main, <span class="hljs-keyword">in</span>: .<span class="hljs-keyword">default</span>)    <span class="hljs-comment">// 每3秒發送一次</span>
+    .autoconnect()
+    .<span class="hljs-built_in">print</span>(<span class="hljs-string">"<span class="hljs-subst">\(Date()</span>.description)"</span>)
+    .throttle(<span class="hljs-keyword">for</span>: <span class="hljs-number">10.0</span>, scheduler: <span class="hljs-type">RunLoop</span>.main, latest: <span class="hljs-literal">true</span>)         <span class="hljs-comment">// 每10秒內取最後一個</span>
+    .sink(
+        receiveCompletion: { <span class="hljs-built_in">print</span> (<span class="hljs-string">"Completion: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>."</span>) },
+        receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"Received Timestamp <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>."</span>) }
+    )
+</pre><pre class="bash hljs"><span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: request unlimited
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">37</span> +<span class="hljs-number">0000</span>)
+Received Timestamp <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">37</span> +<span class="hljs-number">0000</span>.
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">40</span> +<span class="hljs-number">0000</span>)
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">43</span> +<span class="hljs-number">0000</span>)
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">46</span> +<span class="hljs-number">0000</span>)
+Received Timestamp <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">46</span> +<span class="hljs-number">0000</span>.
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">49</span> +<span class="hljs-number">0000</span>)
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">52</span> +<span class="hljs-number">0000</span>)
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">55</span> +<span class="hljs-number">0000</span>)
+Received Timestamp <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">55</span> +<span class="hljs-number">0000</span>.
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">58</span> +<span class="hljs-number">0000</span>)
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">43</span>:<span class="hljs-number">01</span> +<span class="hljs-number">0000</span>)
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">43</span>:<span class="hljs-number">04</span> +<span class="hljs-number">0000</span>)
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">42</span>:<span class="hljs-number">34</span> +<span class="hljs-number">0000</span>: receive value: (<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">43</span>:<span class="hljs-number">07</span> +<span class="hljs-number">0000</span>)
+Received Timestamp <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">43</span>:<span class="hljs-number">07</span> +<span class="hljs-number">0000</span>.
+</pre><ul>
+<li>圖文版加強版<br><img src="image/Throttle.png" alt=""></li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> throttleDelay = <span class="hljs-number">1.0</span>
+<span class="hljs-keyword">let</span> subject = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">String</span>, <span class="hljs-type">Never</span>&gt;()
+
+<span class="hljs-keyword">let</span> throttled = subject
+    .throttle(<span class="hljs-keyword">for</span>: .seconds(throttleDelay), scheduler: <span class="hljs-type">DispatchQueue</span>.main, latest: <span class="hljs-literal">true</span>)
+    .share()
+
+<span class="hljs-keyword">let</span> subjectTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Emitted values"</span>)
+<span class="hljs-keyword">let</span> throttledTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Throttled values"</span>)
+
+<span class="hljs-keyword">let</span> view = <span class="hljs-type">VStack</span>(spacing: <span class="hljs-number">100</span>) {
+    subjectTimeline
+    throttledTimeline
+}
+
+subject.displayEvents(<span class="hljs-keyword">in</span>: subjectTimeline)
+throttled.displayEvents(<span class="hljs-keyword">in</span>: throttledTimeline)
+
+<span class="hljs-keyword">let</span> subscription1 = subject
+    .sink { string <span class="hljs-keyword">in</span>
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">"+<span class="hljs-subst">\(deltaTime)</span>s: Subject emitted: <span class="hljs-subst">\(string)</span>"</span>)
+    }
+
+<span class="hljs-keyword">let</span> subscription2 = throttled
+    .sink { string <span class="hljs-keyword">in</span>
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">"+<span class="hljs-subst">\(deltaTime)</span>s: Throttled emitted: <span class="hljs-subst">\(string)</span>"</span>)
+    }
+
+subject.feed(with: typingHelloWorld)
+
+<span class="hljs-type">PlaygroundPage</span>.current.liveView = <span class="hljs-type">UIHostingController</span>(rootView: view.frame(width: <span class="hljs-number">400</span>, height: <span class="hljs-number">600</span>))
+</pre><h3 id="[timeout(_:scheduler:options:customerror:)](https://derrickho328.medium.com/combine-timeout-a5e89b434c72)"><a name="[timeout(_:scheduler:options:customerror:)](https://derrickho328.medium.com/combine-timeout-a5e89b434c72)" href="#[timeout(_:scheduler:options:customerror:)](https://derrickho328.medium.com/combine-timeout-a5e89b434c72)"></a><a href="https://derrickho328.medium.com/combine-timeout-a5e89b434c72">timeout(_:scheduler:options:customError:)</a></h3><ul>
+<li>用於設定pipline的超時時間</li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> <span class="hljs-type">WaitTime</span> : <span class="hljs-type">Int</span> = <span class="hljs-number">2</span>
+<span class="hljs-keyword">let</span> <span class="hljs-type">TimeoutTime</span> : <span class="hljs-type">Int</span> = <span class="hljs-number">5</span>
+
+<span class="hljs-keyword">let</span> subject = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">String</span>, <span class="hljs-type">Never</span>&gt;()
+<span class="hljs-keyword">let</span> cancellable = subject
+    .timeout(.seconds(<span class="hljs-type">TimeoutTime</span>), scheduler: <span class="hljs-type">DispatchQueue</span>.main, options: <span class="hljs-literal">nil</span>, customError:<span class="hljs-literal">nil</span>)
+    .sink(
+        receiveCompletion: { <span class="hljs-built_in">print</span> (<span class="hljs-string">"<span class="hljs-subst">\(Date()</span>) - <span class="hljs-subst">\(TimeoutTime)</span>秒後完成: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) },
+        receiveValue: { <span class="hljs-built_in">print</span> (<span class="hljs-string">"<span class="hljs-subst">\(Date()</span>) - 數值: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) }
+    )
+
+<span class="hljs-built_in">print</span>(<span class="hljs-string">"<span class="hljs-subst">\(Date()</span>) - 開始"</span>)
+
+<span class="hljs-type">DispatchQueue</span>.main.asyncAfter(deadline: .now() + .seconds(<span class="hljs-type">WaitTime</span>), execute: { subject.send(<span class="hljs-string">"<span class="hljs-subst">\(Date()</span>) - 等<span class="hljs-subst">\(WaitTime)</span>秒後發出"</span>) } )
+</pre><pre class="bash hljs"><span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">55</span>:<span class="hljs-number">46</span> +<span class="hljs-number">0000</span> - 開始
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">55</span>:<span class="hljs-number">49</span> +<span class="hljs-number">0000</span> - 數值: <span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">55</span>:<span class="hljs-number">49</span> +<span class="hljs-number">0000</span> - 等<span class="hljs-number">2</span>秒後發出
+<span class="hljs-number">2023</span>-<span class="hljs-number">06</span>-<span class="hljs-number">14</span> <span class="hljs-number">06</span>:<span class="hljs-number">55</span>:<span class="hljs-number">54</span> +<span class="hljs-number">0000</span> - 完成: finished
+</pre><ul>
+<li>圖文版加強版<br><img src="image/Timeout.png" alt=""></li></ul><pre class="swift hljs"><span class="hljs-class"><span class="hljs-keyword">enum</span> <span class="hljs-title">TimeoutError</span>: <span class="hljs-title">Error</span> </span>{
+    <span class="hljs-keyword">case</span> timedOut
+}
+
+<span class="hljs-keyword">let</span> subject = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Void</span>, <span class="hljs-type">TimeoutError</span>&gt;()
+
+<span class="hljs-keyword">let</span> timedOutSubject = subject.timeout(.seconds(<span class="hljs-number">5</span>), scheduler: <span class="hljs-type">DispatchQueue</span>.main, customError: { .timedOut })
+<span class="hljs-keyword">let</span> timeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Button taps"</span>)
+
+<span class="hljs-keyword">let</span> view = <span class="hljs-type">VStack</span>(spacing: <span class="hljs-number">100</span>) {
+
+    <span class="hljs-type">Button</span>(action: { subject.send() }) {
+        <span class="hljs-type">Text</span>(<span class="hljs-string">"Press me within 5 seconds"</span>)
+    }
+    timeline
+}
+
+timedOutSubject.displayEvents(<span class="hljs-keyword">in</span>: timeline)
+
+<span class="hljs-type">PlaygroundPage</span>.current.liveView = <span class="hljs-type">UIHostingController</span>(rootView: view.frame(width: <span class="hljs-number">600</span>, height: <span class="hljs-number">600</span>))
+</pre><h3 id="[measureinterval(using:options:)](https://medium.com/swlh/operators-b8405cb9e265)"><a name="[measureinterval(using:options:)](https://medium.com/swlh/operators-b8405cb9e265)" href="#[measureinterval(using:options:)](https://medium.com/swlh/operators-b8405cb9e265)"></a><a href="https://medium.com/swlh/operators-b8405cb9e265">measureInterval(using:options:)</a></h3><ul>
+<li>測量並行出從上游發佈者接收到的事件之間的時間間隔…</li><li>可以看出時間間隔大約就是一秒</li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> cancellable = <span class="hljs-type">Timer</span>.publish(every: <span class="hljs-number">1</span>, on: .main, <span class="hljs-keyword">in</span>: .<span class="hljs-keyword">default</span>)
+    .autoconnect()
+    .measureInterval(using: <span class="hljs-type">RunLoop</span>.main)
+    .sink { <span class="hljs-built_in">print</span>(<span class="hljs-string">"<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>, terminator: <span class="hljs-string">"\n"</span>) }
+</pre><pre class="bash hljs">Stride(magnitude: <span class="hljs-number">1.0004009008407593</span>)
+Stride(magnitude: <span class="hljs-number">1.0000990629196167</span>)
+Stride(magnitude: <span class="hljs-number">1.0000349283218384</span>)
+Stride(magnitude: <span class="hljs-number">1.0007370710372925</span>)
+Stride(magnitude: <span class="hljs-number">1.0000169277191162</span>)
+Stride(magnitude: <span class="hljs-number">0.9993090629577637</span>)
+Stride(magnitude: <span class="hljs-number">0.9999560117721558</span>)
+Stride(magnitude: <span class="hljs-number">1.0000669956207275</span>)
+Stride(magnitude: <span class="hljs-number">0.9999699592590332</span>)
+</pre><ul>
+<li>圖文版加強版<br><img src="image/MeasureInterval.png" alt=""></li></ul><pre class="swift hljs"><span class="hljs-keyword">let</span> subject = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">String</span>, <span class="hljs-type">Never</span>&gt;()
+
+<span class="hljs-keyword">let</span> measureSubject = subject.measureInterval(using: <span class="hljs-type">DispatchQueue</span>.main)
+<span class="hljs-keyword">let</span> measureSubject2 = subject.measureInterval(using: <span class="hljs-type">RunLoop</span>.main)
+
+<span class="hljs-keyword">let</span> subjectTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Emitted values"</span>)
+<span class="hljs-keyword">let</span> measureTimeline = <span class="hljs-type">TimelineView</span>(title: <span class="hljs-string">"Measured values"</span>)
+
+<span class="hljs-keyword">let</span> view = <span class="hljs-type">VStack</span>(spacing: <span class="hljs-number">100</span>) {
+    subjectTimeline
+    measureTimeline
+}
+
+subject.displayEvents(<span class="hljs-keyword">in</span>: subjectTimeline)
+measureSubject.displayEvents(<span class="hljs-keyword">in</span>: measureTimeline)
+
+<span class="hljs-keyword">let</span> subscription1 = subject.sink {
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"+<span class="hljs-subst">\(deltaTime)</span>s: Subject emitted: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>)
+}
+
+<span class="hljs-keyword">let</span> subscription2 = measureSubject.sink {
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"+<span class="hljs-subst">\(deltaTime)</span>s: Measure emitted: <span class="hljs-subst">\(Double($<span class="hljs-number">0</span>.magnitude)</span> / 1_000_000_000.0)"</span>)
+}
+
+<span class="hljs-keyword">let</span> subscription3 = measureSubject2.sink {
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"+<span class="hljs-subst">\(deltaTime)</span>s: Measure2 emitted: <span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>)
+}
+
+subject.feed(with: typingHelloWorld)
+
+<span class="hljs-type">PlaygroundPage</span>.current.liveView = <span class="hljs-type">UIHostingController</span>(rootView: view.frame(width: <span class="hljs-number">375</span>, height: <span class="hljs-number">600</span>))
+</pre>
 
 
 </body>
