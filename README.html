@@ -2500,7 +2500,558 @@ measureSubject.displayEvents(<span class="hljs-keyword">in</span>: measureTimeli
 subject.feed(with: typingHelloWorld)
 
 <span class="hljs-type">PlaygroundPage</span>.current.liveView = <span class="hljs-type">UIHostingController</span>(rootView: view.frame(width: <span class="hljs-number">375</span>, height: <span class="hljs-number">600</span>))
+</pre><h2 id="lesson.06---序列用運算子"><a name="lesson.06---序列用運算子" href="#lesson.06---序列用運算子"></a>Lesson.06 - 序列用運算子</h2><h3 id="[最小值---min()-/-最大值---max()](https://juejin.cn/post/7020306845646454820)"><a name="[最小值---min()-/-最大值---max()](https://juejin.cn/post/7020306845646454820)" href="#[最小值---min()-/-最大值---max()](https://juejin.cn/post/7020306845646454820)"></a><a href="https://juejin.cn/post/7020306845646454820">最小值 - min() / 最大值 - max()</a></h3><ul>
+<li><p>取最小值</p>
+<pre data-origin="example(of: &quot;min()&quot;) {
+
+  let publisher = [1, -50, 246, 0].publisher
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .min()
+      .sink(receiveValue: { print(&quot;最小值：\($0)&quot;) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"min()"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-number">1</span>, -<span class="hljs-number">50</span>, <span class="hljs-number">246</span>, <span class="hljs-number">0</span>].publisher
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .<span class="hljs-built_in">min</span>()
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"最小值：<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
 </pre>
+<pre data-origin="=== 範例: min() ===
+publisher: receive subscription: ([1, -50, 246, 0])
+publisher: request unlimited
+publisher: receive value: (1)
+publisher: receive value: (-50)
+publisher: receive value: (246)
+publisher: receive value: (0)
+publisher: receive finished
+最小值：-50
+" class="bash hljs">=== 範例: min() ===
+publisher: receive subscription: ([<span class="hljs-number">1</span>, -<span class="hljs-number">50</span>, <span class="hljs-number">246</span>, <span class="hljs-number">0</span>])
+publisher: request unlimited
+publisher: receive value: (<span class="hljs-number">1</span>)
+publisher: receive value: (-<span class="hljs-number">50</span>)
+publisher: receive value: (<span class="hljs-number">246</span>)
+publisher: receive value: (<span class="hljs-number">0</span>)
+publisher: receive finished
+最小值：-<span class="hljs-number">50</span>
+</pre>
+</li><li><p>取最小值 (自訂過濾條件)</p>
+<pre data-origin="example(of: &quot;min non-Comparable&quot;) {
+
+  let publisher = [&quot;12345&quot;, &quot;ab&quot;, &quot;hello world&quot;]
+      .map { Data($0.utf8) }
+      .publisher
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .min { $0.count &amp;lt; $1.count }
+      .sink { data in
+          guard let string = String(data: data, encoding: .utf8) else { return }
+          print(&quot;最小資料的是 \(string), \(string.count) bytes&quot;)
+      }.store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"min non-Comparable"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"12345"</span>, <span class="hljs-string">"ab"</span>, <span class="hljs-string">"hello world"</span>]
+      .<span class="hljs-built_in">map</span> { <span class="hljs-type">Data</span>($<span class="hljs-number">0</span>.utf8) }
+      .publisher
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .<span class="hljs-built_in">min</span> { $<span class="hljs-number">0</span>.<span class="hljs-built_in">count</span> &lt; $<span class="hljs-number">1</span>.<span class="hljs-built_in">count</span> }
+      .sink { data <span class="hljs-keyword">in</span>
+          <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> string = <span class="hljs-type">String</span>(data: data, encoding: .utf8) <span class="hljs-keyword">else</span> { <span class="hljs-keyword">return</span> }
+          <span class="hljs-built_in">print</span>(<span class="hljs-string">"最小資料的是 <span class="hljs-subst">\(string)</span>, <span class="hljs-subst">\(string.<span class="hljs-built_in">count</span>)</span> bytes"</span>)
+      }.store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: min non-Comparable ===
+publisher: receive subscription: ([5 bytes, 2 bytes, 11 bytes])
+publisher: request unlimited
+publisher: receive value: (5 bytes)
+publisher: receive value: (2 bytes)
+publisher: receive value: (11 bytes)
+publisher: receive finished
+最小資料的是 ab, 2 bytes
+" class="bash hljs">=== 範例: min non-Comparable ===
+publisher: receive subscription: ([<span class="hljs-number">5</span> bytes, <span class="hljs-number">2</span> bytes, <span class="hljs-number">11</span> bytes])
+publisher: request unlimited
+publisher: receive value: (<span class="hljs-number">5</span> bytes)
+publisher: receive value: (<span class="hljs-number">2</span> bytes)
+publisher: receive value: (<span class="hljs-number">11</span> bytes)
+publisher: receive finished
+最小資料的是 ab, <span class="hljs-number">2</span> bytes
+</pre>
+</li><li><p>取最大值</p>
+<pre data-origin="example(of: &quot;max()&quot;) {
+
+  let publisher = [&quot;A&quot;, &quot;F&quot;, &quot;Z&quot;, &quot;E&quot;].publisher
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .max()
+      .sink(receiveValue: { print(&quot;最大值：\($0)&quot;) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"max()"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"A"</span>, <span class="hljs-string">"F"</span>, <span class="hljs-string">"Z"</span>, <span class="hljs-string">"E"</span>].publisher
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .<span class="hljs-built_in">max</span>()
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"最大值：<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: max() ===
+publisher: receive subscription: ([&quot;A&quot;, &quot;F&quot;, &quot;Z&quot;, &quot;E&quot;])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive value: (F)
+publisher: receive value: (Z)
+publisher: receive value: (E)
+publisher: receive finished
+最大值：Z
+" class="bash hljs">=== 範例: max() ===
+publisher: receive subscription: ([<span class="hljs-string">"A"</span>, <span class="hljs-string">"F"</span>, <span class="hljs-string">"Z"</span>, <span class="hljs-string">"E"</span>])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive value: (F)
+publisher: receive value: (Z)
+publisher: receive value: (E)
+publisher: receive finished
+最大值：Z
+</pre>
+</li></ul><h3 id="[第一個值---first()-/-最後一個值---last()](https://juejin.cn/post/7020308230341410852)"><a name="[第一個值---first()-/-最後一個值---last()](https://juejin.cn/post/7020308230341410852)" href="#[第一個值---first()-/-最後一個值---last()](https://juejin.cn/post/7020308230341410852)"></a><a href="https://juejin.cn/post/7020308230341410852">第一個值 - first() / 最後一個值 - last()</a></h3><ul>
+<li><p>取第一個值</p>
+<pre data-origin="example(of: &quot;first()&quot;) {
+
+  let publisher = [&quot;A&quot;, &quot;F&quot;, &quot;Z&quot;, &quot;E&quot;].publisher
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .first()
+      .sink(receiveValue: { print(&quot;第一個值：\($0)&quot;) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"first()"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"A"</span>, <span class="hljs-string">"F"</span>, <span class="hljs-string">"Z"</span>, <span class="hljs-string">"E"</span>].publisher
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .first()
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"第一個值：<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: first() ===
+publisher: receive subscription: ([&quot;A&quot;, &quot;F&quot;, &quot;Z&quot;, &quot;E&quot;])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive cancel
+第一個值：A
+" class="bash hljs">=== 範例: first() ===
+publisher: receive subscription: ([<span class="hljs-string">"A"</span>, <span class="hljs-string">"F"</span>, <span class="hljs-string">"Z"</span>, <span class="hljs-string">"E"</span>])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive cancel
+第一個值：A
+</pre>
+</li><li><p>取第一個值 (自訂過濾條件)</p>
+<pre data-origin="example(of: &quot;first(where:)&quot;) {
+
+  let publisher = [&quot;J&quot;, &quot;O&quot;, &quot;H&quot;, &quot;N&quot;].publisher
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .first(where: { &quot;Hello World&quot;.contains($0) })
+      .sink(receiveValue: { print(&quot;符合條件的第一個值：\($0)&quot;) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"first(where:)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"J"</span>, <span class="hljs-string">"O"</span>, <span class="hljs-string">"H"</span>, <span class="hljs-string">"N"</span>].publisher
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .first(<span class="hljs-keyword">where</span>: { <span class="hljs-string">"Hello World"</span>.<span class="hljs-built_in">contains</span>($<span class="hljs-number">0</span>) })
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"符合條件的第一個值：<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: first(where:) ===
+publisher: receive subscription: ([&quot;J&quot;, &quot;O&quot;, &quot;H&quot;, &quot;N&quot;])
+publisher: request unlimited
+publisher: receive value: (J)
+publisher: receive value: (O)
+publisher: receive value: (H)
+publisher: receive cancel
+符合條件的第一個值：H
+" class="bash hljs">=== 範例: first(<span class="hljs-built_in">where</span>:) ===
+publisher: receive subscription: ([<span class="hljs-string">"J"</span>, <span class="hljs-string">"O"</span>, <span class="hljs-string">"H"</span>, <span class="hljs-string">"N"</span>])
+publisher: request unlimited
+publisher: receive value: (J)
+publisher: receive value: (O)
+publisher: receive value: (H)
+publisher: receive cancel
+符合條件的第一個值：H
+</pre>
+</li><li><p>取最後一個值</p>
+<pre data-origin="example(of: &quot;last()&quot;) {
+
+  let publisher = [&quot;A&quot;, &quot;E&quot;, &quot;I&quot;, &quot;O&quot;, &quot;U&quot;].publisher
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .last()
+      .sink(receiveValue: { print(&quot;最後一個值：\($0)&quot;) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"last()"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"A"</span>, <span class="hljs-string">"E"</span>, <span class="hljs-string">"I"</span>, <span class="hljs-string">"O"</span>, <span class="hljs-string">"U"</span>].publisher
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .last()
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"最後一個值：<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: last() ===
+publisher: receive subscription: ([&quot;A&quot;, &quot;E&quot;, &quot;I&quot;, &quot;O&quot;, &quot;U&quot;])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive value: (E)
+publisher: receive value: (I)
+publisher: receive value: (O)
+publisher: receive value: (U)
+publisher: receive finished
+最後一個值：U
+" class="bash hljs">=== 範例: last() ===
+publisher: receive subscription: ([<span class="hljs-string">"A"</span>, <span class="hljs-string">"E"</span>, <span class="hljs-string">"I"</span>, <span class="hljs-string">"O"</span>, <span class="hljs-string">"U"</span>])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive value: (E)
+publisher: receive value: (I)
+publisher: receive value: (O)
+publisher: receive value: (U)
+publisher: receive finished
+最後一個值：U
+</pre>
+</li></ul><h3 id="[取某一個值---output(at:)-/-取某區間的值---output(in:)](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/5-combining-operators)"><a name="[取某一個值---output(at:)-/-取某區間的值---output(in:)](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/5-combining-operators)" href="#[取某一個值---output(at:)-/-取某區間的值---output(in:)](https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/5-combining-operators)"></a><a href="https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v3.0/chapters/5-combining-operators">取某一個值 - output(at:) / 取某區間的值 - output(in:)</a></h3><ul>
+<li><p>取某一個值</p>
+<pre data-origin="example(of: &quot;output(at:)&quot;) {
+
+  let publisher = [&quot;A&quot;, &quot;E&quot;, &quot;I&quot;, &quot;O&quot;, &quot;U&quot;].publisher
+  let index = 2
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .output(at: index)
+      .sink(receiveValue: { print(&quot;index = \(index)的值：\($0)&quot;) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"output(at:)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"A"</span>, <span class="hljs-string">"E"</span>, <span class="hljs-string">"I"</span>, <span class="hljs-string">"O"</span>, <span class="hljs-string">"U"</span>].publisher
+  <span class="hljs-keyword">let</span> index = <span class="hljs-number">2</span>
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .output(at: index)
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"index = <span class="hljs-subst">\(index)</span>的值：<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: output(at:) ===
+publisher: receive subscription: ([&quot;A&quot;, &quot;E&quot;, &quot;I&quot;, &quot;O&quot;, &quot;U&quot;])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: request max: (1) (synchronous)
+publisher: receive value: (E)
+publisher: request max: (1) (synchronous)
+publisher: receive value: (I)
+index = 2的值：I
+publisher: receive cancel
+" class="bash hljs">=== 範例: output(at:) ===
+publisher: receive subscription: ([<span class="hljs-string">"A"</span>, <span class="hljs-string">"E"</span>, <span class="hljs-string">"I"</span>, <span class="hljs-string">"O"</span>, <span class="hljs-string">"U"</span>])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: request max: (<span class="hljs-number">1</span>) (synchronous)
+publisher: receive value: (E)
+publisher: request max: (<span class="hljs-number">1</span>) (synchronous)
+publisher: receive value: (I)
+index = <span class="hljs-number">2</span>的值：I
+publisher: receive cancel
+</pre>
+</li><li><p>取某區間的值</p>
+<pre data-origin="example(of: &quot;output(in:)&quot;) {
+
+  let publisher = [&quot;A&quot;, &quot;E&quot;, &quot;I&quot;, &quot;O&quot;, &quot;U&quot;].publisher
+  let range = 1...3
+
+  publisher
+      .output(in: range)
+      .sink(
+          receiveCompletion: { print($0) },
+          receiveValue: { print(&quot;區間內的值：\($0)&quot;) }
+      )
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"output(in:)"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"A"</span>, <span class="hljs-string">"E"</span>, <span class="hljs-string">"I"</span>, <span class="hljs-string">"O"</span>, <span class="hljs-string">"U"</span>].publisher
+  <span class="hljs-keyword">let</span> range = <span class="hljs-number">1</span>...<span class="hljs-number">3</span>
+
+  publisher
+      .output(<span class="hljs-keyword">in</span>: range)
+      .sink(
+          receiveCompletion: { <span class="hljs-built_in">print</span>($<span class="hljs-number">0</span>) },
+          receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"區間內的值：<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) }
+      )
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: output(in:) ===
+區間內的值：E
+區間內的值：I
+區間內的值：O
+finished
+" class="bash hljs">=== 範例: output(<span class="hljs-keyword">in</span>:) ===
+區間內的值：E
+區間內的值：I
+區間內的值：O
+finished
+</pre>
+</li></ul><h3 id="[取得數量---count()](https://betterprogramming.pub/7-sequential-operators-you-should-know-from-swift-combine-1775ce3c47c8)"><a name="[取得數量---count()](https://betterprogramming.pub/7-sequential-operators-you-should-know-from-swift-combine-1775ce3c47c8)" href="#[取得數量---count()](https://betterprogramming.pub/7-sequential-operators-you-should-know-from-swift-combine-1775ce3c47c8)"></a><a href="https://betterprogramming.pub/7-sequential-operators-you-should-know-from-swift-combine-1775ce3c47c8">取得數量 - count()</a></h3><ul>
+<li><p>取得數量</p>
+<pre data-origin="example(of: &quot;count()&quot;) {
+
+  let publisher = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;].publisher
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .count()
+      .sink(receiveValue: { print(&quot;有\($0)個項目&quot;) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"count()"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"A"</span>, <span class="hljs-string">"B"</span>, <span class="hljs-string">"C"</span>].publisher
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .<span class="hljs-built_in">count</span>()
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"有<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>個項目"</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: count() ===
+publisher: receive subscription: ([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive value: (B)
+publisher: receive value: (C)
+publisher: receive finished
+有3個項目
+" class="bash hljs">=== 範例: count() ===
+publisher: receive subscription: ([<span class="hljs-string">"A"</span>, <span class="hljs-string">"B"</span>, <span class="hljs-string">"C"</span>])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive value: (B)
+publisher: receive value: (C)
+publisher: receive finished
+有<span class="hljs-number">3</span>個項目
+</pre>
+</li></ul><h3 id="[處理包含的值---contains()-/-contains(where:)](https://paigeshin1991.medium.com/swift-combine-contains-operator-f47a213b6870)"><a name="[處理包含的值---contains()-/-contains(where:)](https://paigeshin1991.medium.com/swift-combine-contains-operator-f47a213b6870)" href="#[處理包含的值---contains()-/-contains(where:)](https://paigeshin1991.medium.com/swift-combine-contains-operator-f47a213b6870)"></a><a href="https://paigeshin1991.medium.com/swift-combine-contains-operator-f47a213b6870">處理包含的值 - contains() / contains(where:)</a></h3><ul>
+<li><p>處理包含的值</p>
+<pre data-origin="example(of: &quot;contains()&quot;) {
+
+  let publisher = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;].publisher
+  let letter = &quot;C&quot;
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .contains(letter)
+      .sink(receiveValue: { isContains in
+          print(isContains ? &quot;Publisher包含 - \(letter)&quot; : &quot;Publisher不包含 - \(letter)!&quot;)
+      })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"contains()"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"A"</span>, <span class="hljs-string">"B"</span>, <span class="hljs-string">"C"</span>, <span class="hljs-string">"D"</span>, <span class="hljs-string">"E"</span>].publisher
+  <span class="hljs-keyword">let</span> letter = <span class="hljs-string">"C"</span>
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .<span class="hljs-built_in">contains</span>(letter)
+      .sink(receiveValue: { isContains <span class="hljs-keyword">in</span>
+          <span class="hljs-built_in">print</span>(isContains ? <span class="hljs-string">"Publisher包含 - <span class="hljs-subst">\(letter)</span>"</span> : <span class="hljs-string">"Publisher不包含 - <span class="hljs-subst">\(letter)</span>!"</span>)
+      })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: contains() ===
+publisher: receive subscription: ([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive value: (B)
+publisher: receive value: (C)
+publisher: receive cancel
+Publisher包含 - C
+" class="bash hljs">=== 範例: contains() ===
+publisher: receive subscription: ([<span class="hljs-string">"A"</span>, <span class="hljs-string">"B"</span>, <span class="hljs-string">"C"</span>, <span class="hljs-string">"D"</span>, <span class="hljs-string">"E"</span>])
+publisher: request unlimited
+publisher: receive value: (A)
+publisher: receive value: (B)
+publisher: receive value: (C)
+publisher: receive cancel
+Publisher包含 - C
+</pre>
+</li><li><p>處理包含的值 (自訂過濾條件)</p>
+<pre data-origin="example(of: &quot;contains(where:)&quot;) {
+
+  struct Person {
+      let id: Int
+      let name: String
+  }
+
+  let people = [(123, &quot;Shai Mishali&quot;), (777, &quot;Marin Todorov&quot;), (214, &quot;Florent Pillet&quot;)]
+      .map(Person.init)
+      .publisher
+
+  people
+      .contains(where: { $0.id == 800 || $0.name == &quot;Marin Todorov&quot; })
+      .sink(receiveValue: { isContains in
+          print(isContains ? &quot;有找到符合條件的值&quot; : &quot;沒有找到符合條件的值&quot;)
+      })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"contains(where:)"</span>) {
+
+  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Person</span> </span>{
+      <span class="hljs-keyword">let</span> id: <span class="hljs-type">Int</span>
+      <span class="hljs-keyword">let</span> name: <span class="hljs-type">String</span>
+  }
+
+  <span class="hljs-keyword">let</span> people = [(<span class="hljs-number">123</span>, <span class="hljs-string">"Shai Mishali"</span>), (<span class="hljs-number">777</span>, <span class="hljs-string">"Marin Todorov"</span>), (<span class="hljs-number">214</span>, <span class="hljs-string">"Florent Pillet"</span>)]
+      .<span class="hljs-built_in">map</span>(<span class="hljs-type">Person</span>.<span class="hljs-keyword">init</span>)
+      .publisher
+
+  people
+      .<span class="hljs-built_in">contains</span>(<span class="hljs-keyword">where</span>: { $<span class="hljs-number">0</span>.id == <span class="hljs-number">800</span> || $<span class="hljs-number">0</span>.name == <span class="hljs-string">"Marin Todorov"</span> })
+      .sink(receiveValue: { isContains <span class="hljs-keyword">in</span>
+          <span class="hljs-built_in">print</span>(isContains ? <span class="hljs-string">"有找到符合條件的值"</span> : <span class="hljs-string">"沒有找到符合條件的值"</span>)
+      })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: contains(where:) ===
+有找到符合條件的值
+" class="bash hljs">=== 範例: contains(<span class="hljs-built_in">where</span>:) ===
+有找到符合條件的值
+</pre>
+</li></ul><h3 id="[找到所有符合條件的值---allsatisfy()](https://medium.com/彼得潘的-swift-ios-app-開發問題解答集/swift-集合的-contains-allsatisfy-判斷-集合裡的東西是否符合條件-35adc54ed397)"><a name="[找到所有符合條件的值---allsatisfy()](https://medium.com/彼得潘的-swift-ios-app-開發問題解答集/swift-集合的-contains-allsatisfy-判斷-集合裡的東西是否符合條件-35adc54ed397)" href="#[找到所有符合條件的值---allsatisfy()](https://medium.com/彼得潘的-swift-ios-app-開發問題解答集/swift-集合的-contains-allsatisfy-判斷-集合裡的東西是否符合條件-35adc54ed397)"></a><a href="https://medium.com/彼得潘的-swift-ios-app-開發問題解答集/swift-集合的-contains-allsatisfy-判斷-集合裡的東西是否符合條件-35adc54ed397">找到所有符合條件的值 - allSatisfy()</a></h3><ul>
+<li><p>找到所有符合條件的值</p>
+<pre data-origin="example(of: &quot;allSatisfy()&quot;) {
+
+  let publisher = stride(from: 0, to: 5, by: 1).publisher
+  let condition: (Int) -&amp;gt; Bool = { $0 % 2 == 0 }
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .allSatisfy { condition($0) }
+      .sink(receiveValue: { isAllEven in
+          print(isAllEven ? &quot;全部都是偶數&quot; : &quot;不全都是偶數&quot;)
+      })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"allSatisfy()"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = <span class="hljs-built_in">stride</span>(from: <span class="hljs-number">0</span>, to: <span class="hljs-number">5</span>, by: <span class="hljs-number">1</span>).publisher
+  <span class="hljs-keyword">let</span> condition: (<span class="hljs-type">Int</span>) -&gt; <span class="hljs-type">Bool</span> = { $<span class="hljs-number">0</span> % <span class="hljs-number">2</span> == <span class="hljs-number">0</span> }
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .allSatisfy { condition($<span class="hljs-number">0</span>) }
+      .sink(receiveValue: { isAllEven <span class="hljs-keyword">in</span>
+          <span class="hljs-built_in">print</span>(isAllEven ? <span class="hljs-string">"全部都是偶數"</span> : <span class="hljs-string">"不全都是偶數"</span>)
+      })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: allSatisfy() ===
+publisher: receive subscription: (Sequence)
+publisher: request unlimited
+publisher: receive value: (0)
+publisher: receive value: (1)
+publisher: receive cancel
+不全都是偶數
+" class="bash hljs">=== 範例: allSatisfy() ===
+publisher: receive subscription: (Sequence)
+publisher: request unlimited
+publisher: receive value: (<span class="hljs-number">0</span>)
+publisher: receive value: (<span class="hljs-number">1</span>)
+publisher: receive cancel
+不全都是偶數
+</pre>
+</li><li><p><a href="https://medium.com/彼得潘的-swift-ios-app-開發教室/array-的高階函式-filter-map-and-reduce-39fb8ba5a9f7">依照條件合併</a></p>
+<pre data-origin="example(of: &quot;reduce()&quot;) {
+
+  let publisher = [&quot;Hel&quot;, &quot;lo&quot;, &quot; &quot;, &quot;Wor&quot;, &quot;ld&quot;, &quot;!&quot;].publisher
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .reduce(&quot;&quot;, +)
+      .sink(receiveValue: { print(&quot;合併為：\($0)&quot;) })
+      .store(in: &amp;amp;subscriptions)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"reduce()"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = [<span class="hljs-string">"Hel"</span>, <span class="hljs-string">"lo"</span>, <span class="hljs-string">" "</span>, <span class="hljs-string">"Wor"</span>, <span class="hljs-string">"ld"</span>, <span class="hljs-string">"!"</span>].publisher
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .<span class="hljs-built_in">reduce</span>(<span class="hljs-string">""</span>, +)
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"合併為：<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+}
+</pre>
+<pre data-origin="=== 範例: reduce() ===
+publisher: receive subscription: ([&quot;Hel&quot;, &quot;lo&quot;, &quot; &quot;, &quot;Wor&quot;, &quot;ld&quot;, &quot;!&quot;])
+publisher: request unlimited
+publisher: receive value: (Hel)
+publisher: receive value: (lo)
+publisher: receive value: ( )
+publisher: receive value: (Wor)
+publisher: receive value: (ld)
+publisher: receive value: (!)
+publisher: receive finished
+合併為：Hello World!
+" class="bash hljs">=== 範例: reduce() ===
+publisher: receive subscription: ([<span class="hljs-string">"Hel"</span>, <span class="hljs-string">"lo"</span>, <span class="hljs-string">" "</span>, <span class="hljs-string">"Wor"</span>, <span class="hljs-string">"ld"</span>, <span class="hljs-string">"!"</span>])
+publisher: request unlimited
+publisher: receive value: (Hel)
+publisher: receive value: (lo)
+publisher: receive value: ( )
+publisher: receive value: (Wor)
+publisher: receive value: (ld)
+publisher: receive value: (!)
+publisher: receive finished
+合併為：Hello World!
+</pre>
+</li></ul>
 
 
 </body>
