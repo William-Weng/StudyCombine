@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Combine.html</title>
+  <title>README.html</title>
   <meta name="generator" content="Haroopad 0.13.2" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -2629,6 +2629,51 @@ publisher: receive value: (Z)
 publisher: receive value: (E)
 publisher: receive finished
 最大值：Z
+</pre>
+</li><li><p>取最大值 (要發佈結束，不然會一直等下去)</p>
+<pre data-origin="example(of: &quot;max()&quot;) {
+
+  let publisher = PassthroughSubject&amp;lt;Int, Never&amp;gt;()
+
+  publisher
+      .print(&quot;publisher&quot;)
+      .max()
+      .sink(receiveValue: { print(&quot;最大值：\($0)&quot;) })
+      .store(in: &amp;amp;subscriptions)
+
+  publisher.send(1)
+  publisher.send(2)
+  publisher.send(completion: .finished)
+}
+" class="swift hljs">example(of: <span class="hljs-string">"max()"</span>) {
+
+  <span class="hljs-keyword">let</span> publisher = <span class="hljs-type">PassthroughSubject</span>&lt;<span class="hljs-type">Int</span>, <span class="hljs-type">Never</span>&gt;()
+
+  publisher
+      .<span class="hljs-built_in">print</span>(<span class="hljs-string">"publisher"</span>)
+      .<span class="hljs-built_in">max</span>()
+      .sink(receiveValue: { <span class="hljs-built_in">print</span>(<span class="hljs-string">"最大值：<span class="hljs-subst">\($<span class="hljs-number">0</span>)</span>"</span>) })
+      .store(<span class="hljs-keyword">in</span>: &amp;subscriptions)
+
+  publisher.send(<span class="hljs-number">1</span>)
+  publisher.send(<span class="hljs-number">2</span>)
+  publisher.send(completion: .finished)
+}
+</pre>
+<pre data-origin="=== 範例: max() ===
+publisher: receive subscription: (PassthroughSubject)
+publisher: request unlimited
+publisher: receive value: (1)
+publisher: receive value: (2)
+publisher: receive finished
+最大值：2
+" class="bash hljs">=== 範例: max() ===
+publisher: receive subscription: (PassthroughSubject)
+publisher: request unlimited
+publisher: receive value: (<span class="hljs-number">1</span>)
+publisher: receive value: (<span class="hljs-number">2</span>)
+publisher: receive finished
+最大值：<span class="hljs-number">2</span>
 </pre>
 </li></ul><h3 id="[第一個值---first()-/-最後一個值---last()](https://juejin.cn/post/7020308230341410852)"><a name="[第一個值---first()-/-最後一個值---last()](https://juejin.cn/post/7020308230341410852)" href="#[第一個值---first()-/-最後一個值---last()](https://juejin.cn/post/7020308230341410852)"></a><a href="https://juejin.cn/post/7020308230341410852">第一個值 - first() / 最後一個值 - last()</a></h3><ul>
 <li><p>取第一個值</p>

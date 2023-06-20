@@ -31,7 +31,7 @@ var subscriptions = Set<AnyCancellable>()
 //        }.store(in: &subscriptions)
 //}
 
-// 02. 取最大值
+// 02-1. 取最大值
 //example(of: "max()") {
 //
 //    let publisher = ["A", "F", "Z", "E"].publisher
@@ -41,6 +41,22 @@ var subscriptions = Set<AnyCancellable>()
 //        .max()
 //        .sink(receiveValue: { print("最大值：\($0)") })
 //        .store(in: &subscriptions)
+//}
+
+// 02-2. 取最大值 (要發佈結束，不然會一直等下去)
+//example(of: "max()") {
+//
+//    let publisher = PassthroughSubject<Int, Never>()
+//
+//    publisher
+//        .print("publisher")
+//        .max()
+//        .sink(receiveValue: { print("最大值：\($0)") })
+//        .store(in: &subscriptions)
+//
+//    publisher.send(1)
+//    publisher.send(2)
+//    publisher.send(completion: .finished)
 //}
 
 // 03-1. 取第一個值

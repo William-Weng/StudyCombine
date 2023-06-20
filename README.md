@@ -1817,6 +1817,32 @@ publisher: receive value: (E)
 publisher: receive finished
 最大值：Z
 ```
+- 取最大值 (要發佈結束，不然會一直等下去)
+```swift
+example(of: "max()") {
+    
+    let publisher = PassthroughSubject<Int, Never>()
+    
+    publisher
+        .print("publisher")
+        .max()
+        .sink(receiveValue: { print("最大值：\($0)") })
+        .store(in: &subscriptions)
+    
+    publisher.send(1)
+    publisher.send(2)
+    publisher.send(completion: .finished)
+}
+```
+```bash
+=== 範例: max() ===
+publisher: receive subscription: (PassthroughSubject)
+publisher: request unlimited
+publisher: receive value: (1)
+publisher: receive value: (2)
+publisher: receive finished
+最大值：2
+```
 
 ### [第一個值 - first() / 最後一個值 - last()](https://juejin.cn/post/7020308230341410852)
 - 取第一個值
